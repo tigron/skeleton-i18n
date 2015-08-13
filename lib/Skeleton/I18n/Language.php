@@ -6,7 +6,7 @@
  * @author Gerry Demaret <gerry@tigron.be>
  */
 
-namespace Skeleton\File;
+namespace Skeleton\I18n;
 
 class Language {
 	use \Skeleton\Object\Model;
