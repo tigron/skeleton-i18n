@@ -33,10 +33,10 @@ class Language {
 	 */
 	public static function get_by_name_short($name) {
 		$db = Database::Get();
-		$id = $db->getOne('SELECT id FROM language WHERE name_short=?', [$name]);
+		$id = $db->get_one('SELECT id FROM language WHERE name_short=?', [$name]);
 
 		if ($id === null) {
-			throw new Exception('No such language');
+			throw new \Exception('No such language');
 		}
 
 		return self::get_by_id($id);
