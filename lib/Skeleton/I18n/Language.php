@@ -8,6 +8,8 @@
 
 namespace Skeleton\I18n;
 
+use \Skeleton\Database\Database;
+
 class Language {
 	use \Skeleton\Object\Model;
 	use \Skeleton\Object\Save;
