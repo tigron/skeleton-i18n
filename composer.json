@@ -18,6 +18,6 @@
         "issues": "https://github.com/tigron/skeleton-i18n/issues"
     },
     "autoload": {
-        "psr-4": { "Skeleton\\File\\": "lib/Skeleton/I18n/" }
+        "psr-4": { "Skeleton\\I18n\\": "lib/Skeleton/I18n/" }
     }
 }
