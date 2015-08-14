@@ -52,9 +52,9 @@ function translate_application($application, $directory) {
 		echo ' ' . $language->name_short;
 
 		// If we already have a (partially) translated file, merge
-		if (file_exists(PO_PATH . '/' . $language->name_short . '/' . $application . '.po')) {
-			$translated = Util::load(PO_PATH . '/' . $language->name_short . '/' . $application . '.po');
-			$old_translated = Util::load(PO_PATH . '/' . $language->name_short . '.po');
+		if (file_exists(Config::$po_directory . '/' . $language->name_short . '/' . $application . '.po')) {
+			$translated = Util::load(Config::$po_directory . '/' . $language->name_short . '/' . $application . '.po');
+			$old_translated = Util::load(Config::$po_directory . '/' . $language->name_short . '.po');
 			$translated = array_merge($translated, $old_translated);
 		} else {
 			$translated = [];
@@ -76,7 +76,7 @@ function translate_application($application, $directory) {
 		}
 
 		// And save!
-		Util::save(PO_PATH . '/' . $language->name_short . '/' . $application . '.po', $application, $language, $new_po);
+		Util::save(Config::$po_directory . '/' . $language->name_short . '/' . $application . '.po', $application, $language, $new_po);
 	}
 
 	echo "\n";
