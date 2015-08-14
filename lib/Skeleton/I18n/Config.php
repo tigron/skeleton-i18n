@@ -18,7 +18,7 @@ class Config {
 	 * @access public
 	 * @var string $cache_directory
 	 */
-	public static $cache_directory = sys_get_temp_dir();
+	public static $cache_directory = '/tmp';
 
 	/**
 	 * Directory where we will store the generated .po files
@@ -26,7 +26,7 @@ class Config {
 	 * @access public
 	 * @var string $po_directory
 	 */
-	public static $po_directory = sys_get_temp_dir();
+	public static $po_directory = '/tmp';
 
 	/**
 	 * Base language, the language in which the templates are written
