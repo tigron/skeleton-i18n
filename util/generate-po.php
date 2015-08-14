@@ -4,12 +4,10 @@
  * The resulting files can be found in $ROOT/po/
  */
 
-require_once dirname(__FILE__) . '/../../config/global.php';
-
-$config = Config::Get();
+namespace Skeleton\I18n;
 
 // Fetch paths for Applications
-$applications = Application::get_all();
+$applications = \Skeleton\Core\Application::get_all();
 
 $paths = [];
 foreach ($applications as $application) {
@@ -32,8 +30,6 @@ foreach ($paths as $application => $directory) {
  * @param string $directory Application path
  */
 function translate_application($application, $directory) {
-	$config = Config::Get();
-
 	echo 'translating ' . $application . ' (' . $directory . ')';
 
 	// Fetch the templates in this directory
@@ -49,7 +45,7 @@ function translate_application($application, $directory) {
 	$languages = Language::get_all();
 	foreach ($languages as $language) {
 		// Don't create a .po file if it is our base_language
-		if ($language->name_short == $config->base_language) {
+		if ($language->name_short == Config::$base_language) {
 			continue;
 		}
 
@@ -57,8 +53,8 @@ function translate_application($application, $directory) {
 
 		// If we already have a (partially) translated file, merge
 		if (file_exists(PO_PATH . '/' . $language->name_short . '/' . $application . '.po')) {
-			$translated = Util::po_load(PO_PATH . '/' . $language->name_short . '/' . $application . '.po');
-			$old_translated = Util::po_load(PO_PATH . '/' . $language->name_short . '.po');
+			$translated = Util::load(PO_PATH . '/' . $language->name_short . '/' . $application . '.po');
+			$old_translated = Util::load(PO_PATH . '/' . $language->name_short . '.po');
 			$translated = array_merge($translated, $old_translated);
 		} else {
 			$translated = [];
@@ -80,7 +76,7 @@ function translate_application($application, $directory) {
 		}
 
 		// And save!
-		Util::po_save(PO_PATH . '/' . $language->name_short . '/' . $application . '.po', $application, $language, $new_po);
+		Util::save(PO_PATH . '/' . $language->name_short . '/' . $application . '.po', $application, $language, $new_po);
 	}
 
 	echo "\n";

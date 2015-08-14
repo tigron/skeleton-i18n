@@ -37,7 +37,7 @@ class TokenParser extends \Twig_TokenParser {
 
         $this->checkTransString($body, $lineno);
 
-        return new \Twig_Extensions_Node_Trans_Tigron($body, $plural, $count, $lineno, $this->getTag());
+        return new Node\Trans\Tigron($body, $plural, $count, $lineno, $this->getTag());
     }
 
     public function decideForFork($token) {
