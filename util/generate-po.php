@@ -2,6 +2,15 @@
 /**
  * This tool generates the .po files for each application.
  * The resulting files can be found in $ROOT/po/
+ *
+ * You can manually add paths to be translated by defining a variable
+ * $paths which should be an array with the name of the application
+ * as the key, and the path to the application as the value.
+ *
+ * Example:
+ *
+ * $paths['email'] = '/path/to/email/template';
+ * $paths['pdf'] = '/path/to/pdf/template';
  */
 
 namespace Skeleton\I18n;
@@ -9,14 +18,14 @@ namespace Skeleton\I18n;
 // Fetch paths for Applications
 $applications = \Skeleton\Core\Application::get_all();
 
-$paths = [];
+// If the paths array hasn't been defined yet, make sure it exists
+if (!isset($paths) or !is_array($paths)) {
+	$paths = [];
+}
+
 foreach ($applications as $application) {
 	$paths[$application->name] = $application->path;
 }
-
-// Manually add mails and PDF documents
-//$paths['email'] = STORE_PATH . '/email/template';
-//$paths['pdf'] = STORE_PATH . '/pdf/template';
 
 // Translate all the applications
 foreach ($paths as $application => $directory) {
