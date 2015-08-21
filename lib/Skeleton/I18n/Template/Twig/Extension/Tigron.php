@@ -27,7 +27,7 @@ class Tigron extends \Twig_Extensions_Extension_I18n {
 		$translation_filter = new \Twig_SimpleFilter('trans', function (\Twig_Environment $env, $string) {
 			$globals = $env->getGlobals();
 			$translation = $globals['env']['translation'];
-			return Translation::translate($string, $translation);
+			return \Skeleton\I18n\Translation::translate($string, $translation);
 		}, ['needs_environment' => true]);
 		return [
 			$translation_filter
