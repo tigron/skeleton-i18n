@@ -111,17 +111,17 @@ class Tigron extends \Twig_Node
             $msg = '';
 
             foreach ($body as $node) {
-                if (get_class($node) === 'Twig_Node' && $node->getNode(0) instanceof Twig_Node_SetTemp) {
+                if (get_class($node) === 'Twig_Node' && $node->getNode(0) instanceof \Twig_Node_SetTemp) {
                     $node = $node->getNode(1);
                 }
 
-                if ($node instanceof Twig_Node_Print) {
+                if ($node instanceof \Twig_Node_Print) {
                     $n = $node->getNode('expr');
-                    while ($n instanceof Twig_Node_Expression_Filter) {
+                    while ($n instanceof \Twig_Node_Expression_Filter) {
                         $n = $n->getNode('node');
                     }
                     $msg .= sprintf('%%%s%%', $n->getAttribute('name'));
-                    $vars[] = new Twig_Node_Expression_Name($n->getAttribute('name'), $n->getLine());
+                    $vars[] = new \Twig_Node_Expression_Name($n->getAttribute('name'), $n->getLine());
                 } else {
                     $msg .= $node->getAttribute('data');
                 }
@@ -130,6 +130,6 @@ class Tigron extends \Twig_Node
             $msg = $body->getAttribute('data');
         }
 
-        return [new Twig_Node([new Twig_Node_Expression_Constant(trim($msg), $body->getLine())]), $vars];
+        return [new \Twig_Node([new \Twig_Node_Expression_Constant(trim($msg), $body->getLine())]), $vars];
     }
 }
