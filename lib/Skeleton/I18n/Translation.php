@@ -114,10 +114,10 @@ class Translation {
 	 */
 	private function reload_po_file() {
 		if (file_exists(Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po') AND
-		    file_exists(Config::$cache_directory . '/languages/' . $this->language->name_short . '/' . $this->application_name . '.php'))
+		    file_exists(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php'))
 		{
 			$po_file_modified = filemtime(Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po');
-			$array_modified = filemtime(Config::$cache_directory . '/languages/' . $this->language->name_short . '/' . $this->application_name . '.php');
+			$array_modified = filemtime(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php');
 
 			if ($array_modified >= $po_file_modified) {
 				return;
@@ -126,11 +126,11 @@ class Translation {
 
 		$po_strings = Util::load(Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po');
 
-		if (!file_exists(Config::$cache_directory . '/languages/' . $this->language->name_short)) {
-			mkdir(Config::$cache_directory . '/languages/' . $this->language->name_short, 0755, true);
+		if (!file_exists(Config::$cache_directory . '/' . $this->language->name_short)) {
+			mkdir(Config::$cache_directory . '/' . $this->language->name_short, 0755, true);
 		}
 
-		file_put_contents(Config::$cache_directory . '/languages/' . $this->language->name_short . '/' . $this->application_name . '.php', '<?php $strings = ' . var_export($po_strings, true) . ';');
+		file_put_contents(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php', '<?php $strings = ' . var_export($po_strings, true) . ';');
 	}
 
 	/**
@@ -139,8 +139,8 @@ class Translation {
 	 * @access private
 	 */
 	private function load_strings() {
-		if (file_exists(Config::$cache_directory . '/languages/' . $this->language->name_short . '/' . $this->application_name . '.php')) {
-			require Config::$cache_directory . '/languages/' . $this->language->name_short . '/' . $this->application_name . '.php';
+		if (file_exists(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php')) {
+			require Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php';
 			$this->strings = $strings;
 		}
 	}
