@@ -1,6 +1,6 @@
 <?php
 /**
- * migration:create command for Skeleton Console
+ * i18n:generate command for Skeleton Console
  *
  * @author Gerry Demaret <gerry@tigron.be>
  * @author Christophe Gosiau <christophe@tigron.be>
@@ -47,11 +47,19 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$paths[$application->name] = $application->path;
 		}
 
+		// Fetch additional paths to translate
+		if (isset(\Config::get()->additional_translatable_template_paths)) {
+			foreach (\Config::get()->additional_translatable_template_paths as $name => $path) {
+				$paths[$name] = $path;
+			}
+		}
+
 		// Translate all the applications
 		foreach ($paths as $application => $directory) {
 			$log = $this->translate_application($application, $directory);
+			$output->writeln($log);
 		}
-		$output->writeln($log);
+
 		return 0;
 	}
 
