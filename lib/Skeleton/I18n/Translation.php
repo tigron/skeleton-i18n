@@ -51,6 +51,14 @@ class Translation {
 	 * @param string $application
 	 */
 	public function __construct(Language $language = null, $application_name = null) {
+		if (Config::$cache_directory === null) {
+			throw new \Exception('Set a path first in "Config::$cache_directory"');
+		}
+
+		if (Config::$po_directory === null) {
+			throw new \Exception('Set a path first in "Config::$po_directory"');
+		}
+
 		if ($language === null AND $application_name === null) {
 			$this->language = \Application::get()->language;
 			$this->application_name = \Application::get()->name;
