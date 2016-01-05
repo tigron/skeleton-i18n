@@ -149,7 +149,9 @@ class Translation {
 	private function load_strings() {
 		if (file_exists(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php')) {
 			require Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php';
-			$this->strings = $strings;
+			if (isset($strings)) {
+				$this->strings = $strings;
+			}
 		}
 	}
 
