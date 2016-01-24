@@ -48,10 +48,8 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		}
 
 		// Fetch additional paths to translate
-		if (isset(\Config::get()->additional_translatable_template_paths)) {
-			foreach (\Config::get()->additional_translatable_template_paths as $name => $path) {
-				$paths[$name] = $path;
-			}
+		foreach (\Skeleton\I18n\Config::$additional_template_paths as $name => $path) {
+			$paths[$name] = $path;
 		}
 
 		// Translate all the applications
@@ -83,7 +81,11 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		}
 
 		// Translate the strings
-		$languages = \Skeleton\I18n\Language::get_all();
+		$language_interface = \Skeleton\I18n\Config::$language_interface;
+		if (!class_exists($language_interface)) {
+			throw new \Exception('The language interface does not exists: ' . $language_interface);
+		}
+		$languages = $language_interface::get_all();
 		foreach ($languages as $language) {
 			// Don't create a .po file if it is our base_language
 			if ($language->name_short == \Skeleton\I18n\Config::$base_language) {

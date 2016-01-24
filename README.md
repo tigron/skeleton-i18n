@@ -23,6 +23,11 @@ Create a new table in your database:
 	  FULLTEXT KEY `name_short` (`name_short`)
 	) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+Or you can define your own class that implements the LanguageInterface. In that
+case define your LanguageInterface class in the Config
+
+    \Skeleton\I18n\Config::$language_interface = 'My_Fancy_Language_Class';
+
 
 ## Howto
 

@@ -50,15 +50,7 @@ class Translation {
 	 * @param Language $language
 	 * @param string $application
 	 */
-	public function __construct(Language $language = null, $application_name = null) {
-		if (Config::$cache_directory === null) {
-			throw new \Exception('Set a path first in "Config::$cache_directory"');
-		}
-
-		if (Config::$po_directory === null) {
-			throw new \Exception('Set a path first in "Config::$po_directory"');
-		}
-
+	public function __construct(LanguageInterface $language = null, $application_name = null) {
 		if ($language === null AND $application_name === null) {
 			$this->language = \Application::get()->language;
 			$this->application_name = \Application::get()->name;
@@ -149,9 +141,7 @@ class Translation {
 	private function load_strings() {
 		if (file_exists(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php')) {
 			require Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php';
-			if (isset($strings)) {
-				$this->strings = $strings;
-			}
+			$this->strings = $strings;
 		}
 	}
 
@@ -161,7 +151,7 @@ class Translation {
 	 * @access public
 	 * @return Translation $translation
 	 */
-	public static function get(Language $language = null, $application_name = null) {
+	public static function get(LanguageInterface $language = null, $application_name = null) {
 		if (!isset(self::$translation[$language->name_short]) OR self::$translation[$language->name_short]->application_name != $application_name) {
 			self::$translation[$language->name_short] = new self($language, $application_name);
 		}
