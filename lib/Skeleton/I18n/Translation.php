@@ -113,18 +113,51 @@ class Translation {
 	 * @access public
 	 */
 	private function reload_po_file() {
-		if (file_exists(Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po') AND
-		    file_exists(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php'))
-		{
-			$po_file_modified = filemtime(Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po');
-			$array_modified = filemtime(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php');
+		$po_files = [];
+		$po_files[] = Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po';
+		$packages = \Skeleton\Core\Package::get_all();
 
-			if ($array_modified >= $po_file_modified) {
-				return;
+		foreach ($packages as $package) {
+			if (file_exists(Config::$po_directory . '/' . $this->language->name_short . '/package/' . $package->name . '.po')) {
+				$po_files[] = Config::$po_directory . '/' . $this->language->name_short . '/package/' . $package->name . '.po';
 			}
 		}
 
-		$po_strings = Util::load(Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po');
+		$array_modified = 0;
+		if (file_exists(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php')) {
+			$array_modified = filemtime(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php');
+		}
+
+		$po_file_modified = null;
+		foreach ($po_files as $po_file) {
+			if (!file_exists($po_file)) {
+				continue;
+			}
+			if ($po_file_modified === null) {
+				$po_file_modified = filemtime($po_file);
+			}
+			if (filemtime($po_file) > $po_file_modified) {
+				$po_file_modified = filemtime($po_file);
+			}
+		}
+
+		if ($array_modified >= $po_file_modified) {
+			return;
+		}
+
+		$po_strings = [];
+		foreach (array_reverse($po_files) as $po_file) {
+			$strings = Util::load($po_file);
+			foreach ($strings as $key => $value) {
+				if (!isset($po_strings[$key])) {
+					$po_strings[$key] = $value;
+				} elseif ($value != '') {
+					$po_strings[$key] = $value;
+				} else {
+					continue;
+				}
+			}
+		}
 
 		if (!file_exists(Config::$cache_directory . '/' . $this->language->name_short)) {
 			mkdir(Config::$cache_directory . '/' . $this->language->name_short, 0755, true);

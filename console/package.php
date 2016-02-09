@@ -1,9 +1,7 @@
 <?php
 /**
- * i18n:generate command for Skeleton Console
+ * migration:run command for Skeleton Console
  *
- * @author Gerry Demaret <gerry@tigron.be>
- * @author Christophe Gosiau <christophe@tigron.be>
  * @author David Vandemaele <david@tigron.be>
  */
 
@@ -14,7 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class I18n_Generate extends \Skeleton\Console\Command {
+class I18n_Package extends \Skeleton\Console\Command {
 
 	/**
 	 * Configure the Create command
@@ -22,8 +20,9 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 * @access protected
 	 */
 	protected function configure() {
-		$this->setName('i18n:generate');
-		$this->setDescription('Generate po files based on application templates');
+		$this->setName('i18n:package');
+		$this->setDescription('Translate a skeleton package to its local po directory');
+		$this->addArgument('name', InputArgument::REQUIRED, 'Name of the skeleton package');
 	}
 
 	/**
@@ -34,36 +33,17 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 * @param OutputInterface $output
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
-
-		// Fetch paths for Applications
-		$applications = \Skeleton\Core\Application::get_all();
-
-		// If the paths array hasn't been defined yet, make sure it exists
-		if (!isset($paths) or !is_array($paths)) {
-			$paths = [];
-		}
-
-		foreach ($applications as $application) {
-			$paths[$application->name] = $application->path;
-		}
-
-		// Fetch additional paths to translate
-		foreach (\Skeleton\I18n\Config::$additional_template_paths as $name => $path) {
-			$paths[$name] = $path;
-		}
-
-		// Translate all the applications
-		foreach ($paths as $application => $directory) {
-			$log = $this->translate_application($application, $directory);
-			$output->writeln($log);
-		}
-
 		$packages = \Skeleton\Core\Package::get_all();
+		$name = $input->getArgument('name');
+		$to_translate = null;
 		foreach ($packages as $package) {
-			$this->translate_skeleton_package($package);
+			if ($package->name == $name) {
+				$to_translate = $package;
+			}
 		}
 
-		return 0;
+		$log = $this->translate_skeleton_package($to_translate);
+		$output->writeln($log);
 	}
 
 	/**
@@ -101,83 +81,11 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 			$log .=  ' ' . $language->name_short;
 
+			$translated = [];
+
 			// If we have a translation in the package, load it
-			$package_translated = [];
 			if (file_exists($package->path . '/po/' . $language->name_short . '.po')) {
-				$package_translated = \Skeleton\I18n\Util::load($package->path . '/po/' . $language->name_short . '.po');
-			}
-
-			// If there is a local translation file, load it
-			$local_translated = [];
-			if (file_exists(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/' . $package->name . '.po')) {
-				$local_translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/package/' . $package->name . '.po');
-			}
-
-			// Create a new array with the merged translations
-			$new_po = [];
-			foreach ($strings as $string) {
-				if (isset($local_translated[$string]) and $local_translated[$string] != '') {
-					$new_po[$string] = $local_translated[$string];
-				} elseif (isset($package_translated[$string]) and $package_translated[$string] != '') {
-					$new_po[$string] = $package_translated[$string];
-				} else {
-					$new_po[$string] = '';
-				}
-			}
-
-			// Stop doing what we are doing if there are no strings anyway
-			if (count($new_po) == 0) {
-				continue;
-			}
-
-			// And save!
-			\Skeleton\I18n\Util::save(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/package/' . $package->name . '.po', $package->name, $language, $new_po);
-		}
-
-		$log .= "\n";
-		return $log;
-	}
-
-	/**
-	 * Translate an application
-	 *
-	 * @param string $application Name of the application
-	 * @param string $directory Application path
-	 */
-	private function translate_application($application, $directory) {
-		$log = '';
-		$log .= 'translating ' . $application . ' (' . $directory . ')' . "\n";
-
-		// Fetch the templates in this directory
-		$templates = $this->get_templates($directory);
-		$strings = [];
-
-		// Parse all the files we found
-		foreach ($templates as $template) {
-			$strings = array_merge($strings, $this->get_strings($template));
-		}
-
-		// Translate the strings
-		$language_interface = \Skeleton\I18n\Config::$language_interface;
-		if (!class_exists($language_interface)) {
-			throw new \Exception('The language interface does not exists: ' . $language_interface);
-		}
-		$languages = $language_interface::get_all();
-		foreach ($languages as $language) {
-			// Don't create a .po file if it is our base_language
-			if ($language->name_short == \Skeleton\I18n\Config::$base_language) {
-				continue;
-			}
-
-			$log .=  ' ' . $language->name_short;
-
-			// If we already have a (partially) translated file, merge
-			if (file_exists(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/' . $application . '.po')) {
-				$translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/' . $application . '.po');
-				$old_translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '.po');
-				$translated = array_merge($translated, $old_translated);
-			} else {
-				$translated = [];
+				$translated = \Skeleton\I18n\Util::load($package->path . '/po/' . $language->name_short . '.po');
 			}
 
 			// Create a new array with the merged translations
@@ -196,7 +104,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			}
 
 			// And save!
-			\Skeleton\I18n\Util::save(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/' . $application . '.po', $application, $language, $new_po);
+			\Skeleton\I18n\Util::save($package->path . '/po/' . $language->name_short . '.po', $package->name, $language, $new_po);
 		}
 
 		$log .= "\n";
@@ -226,8 +134,8 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		/**
 		 * 'string'|trans
 		 */
-//		preg_match_all('/\'((?:[^\'\\\\]|\\\\.)*)\'\|trans/', $content, $matches);
-//		$twig_strings3 = $this->unescape_strings($matches[1], '\'');
+		preg_match_all('/\'((?:[^\'\\\\]|\\\\.)*)\'\|trans/', $content, $matches);
+		$twig_strings3 = $this->unescape_strings($matches[1], '\'');
 
 		/**
 		 * "string"|trans
@@ -246,7 +154,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		 */
 		preg_match_all("/Translation\:\:translate\(\"(.*?)\"\)/", $content, $matches);
 		$module_strings = $this->unescape_strings($matches[1], '\'');
-		return array_merge($twig_strings, $twig_strings2, $twig_strings4, $twig_strings5, $module_strings);
+
 		return array_merge($twig_strings, $twig_strings2, $twig_strings3, $twig_strings4, $twig_strings5, $module_strings);
 	}
 
@@ -306,4 +214,5 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 		return $templates;
 	}
+
 }
