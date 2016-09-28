@@ -13,8 +13,12 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Aptoma\Twig\Extension\MarkdownExtension;
+use Aptoma\Twig\Extension\MarkdownEngine;
 
 class I18n_Generate extends \Skeleton\Console\Command {
+
+	protected $twig_extractor = null;
 
 	/**
 	 * Configure the Create command
@@ -60,7 +64,8 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 		$packages = \Skeleton\Core\Package::get_all();
 		foreach ($packages as $package) {
-			$this->translate_skeleton_package($package);
+			$log = $this->translate_skeleton_package($package);
+			$output->writeln($log);
 		}
 
 		return 0;
@@ -82,7 +87,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 		// Parse all the files we found
 		foreach ($templates as $template) {
-			$strings = array_merge($strings, $this->get_strings($template));
+			$strings = array_merge($strings, $this->get_strings($template, $package->template_path));
 		}
 
 		// Translate the strings
@@ -109,7 +114,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 			// If there is a local translation file, load it
 			$local_translated = [];
-			if (file_exists(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/' . $package->name . '.po')) {
+			if (file_exists(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/package/' . $package->name . '.po')) {
 				$local_translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/package/' . $package->name . '.po');
 			}
 
@@ -154,7 +159,8 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 		// Parse all the files we found
 		foreach ($templates as $template) {
-			$strings = array_merge($strings, $this->get_strings($template));
+			$log .= $template . "\n";
+			$strings = array_merge($strings, $this->get_strings($template, $directory));
 		}
 
 		// Translate the strings
@@ -192,7 +198,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 			// Stop doing what we are doing if there are no strings anyway
 			if (count($new_po) == 0) {
-				continue;
+				//continue;
 			}
 
 			// And save!
@@ -208,46 +214,52 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 *
 	 * @param string $file The full path of the file to parse
 	 */
-	private function get_strings($file) {
+	private function get_strings($file, $directory) {
+		$parts = explode('.', strrev($file), 2);
+		$filename = strrev($parts[1]);
+		$extension = strrev($parts[0]);
+
+		switch ($extension) {
+			case 'twig':
+				$strings = $this->get_twig_strings($file, $directory);
+				break;
+			case 'tpl':
+				$strings = $this->get_smarty_strings($file, $directory);
+				break;
+			default: throw new \Exception('Unknown template type');
+		}
+
+		return $strings;
+	}
+
+	private function get_twig_strings($file, $directory) {
+		$loader = new \Twig_Loader_Filesystem($directory);
+
+		// force auto-reload to always have the latest version of the template
+		$twig = new \Twig_Environment($loader, [
+		    'cache' => \Skeleton\Template\Twig\Config::$cache_directory,
+		    'auto_reload' => true
+		]);
+		$twig->addExtension(new \Twig_Extensions_Extension_I18n());
+		$twig->addExtension(new \Twig_Extension_StringLoader());
+		$twig->addExtension(new \Twig_Extensions_Extension_Text());
+		$twig->addExtension(new \Skeleton\Template\Twig\Extension\Common());
+		$twig->addExtension(new \Skeleton\I18n\Template\Twig\Extension\Tigron());
+		$parser = new \Skeleton\Template\Twig\Extension\Markdown\Engine();
+		$parser->single_linebreak = true;
+		$twig->addExtension(new MarkdownExtension(
+			$parser
+		));
+
+		$twig_extractor = new \Skeleton\I18n\Extractor\Twig($twig);
+
+		return $twig_extractor->extract($file);
+	}
+
+	private function get_smarty_strings($file, $directory) {
 		$content = file_get_contents($file);
-
-		/**
-		 * {% trans "string" %}
-		 */
-		preg_match_all("/\{%\s*trans \"(.*?)\"\s*%\}/", $content, $matches);
-		$twig_strings = $this->unescape_strings($matches[1], '"');
-
-		/**
-		 * {% trans 'string' %}
-		 */
-		preg_match_all("/\{%\s*trans '(.*?)'\s*%\}/", $content, $matches);
-		$twig_strings2 = $this->unescape_strings($matches[1], '\'');
-
-		/**
-		 * 'string'|trans
-		 */
-//		preg_match_all('/\'((?:[^\'\\\\]|\\\\.)*)\'\|trans/', $content, $matches);
-//		$twig_strings3 = $this->unescape_strings($matches[1], '\'');
-
-		/**
-		 * "string"|trans
-		 */
-		preg_match_all('/"((?:[^"\\\\]|\\\\.)*)"\|trans/', $content, $matches);
-		$twig_strings4 = $this->unescape_strings($matches[1], '"');
-
-		/**
-		 * {% trans %}string{% endtrans %}
-		 */
-		preg_match_all("/\{% trans %\}(.*?)\{% endtrans %\}/s", $content, $matches);
-		$twig_strings5 = $matches[1];
-
-		/**
-		 * Translation::translate('string')
-		 */
-		preg_match_all("/Translation\:\:translate\(\"(.*?)\"\)/", $content, $matches);
-		$module_strings = $this->unescape_strings($matches[1], '\'');
-		return array_merge($twig_strings, $twig_strings2, $twig_strings4, $twig_strings5, $module_strings);
-		return array_merge($twig_strings, $twig_strings2, $twig_strings3, $twig_strings4, $twig_strings5, $module_strings);
+		preg_match_all("/\{t\}(.*?)\{\/t\}/", $content, $matches);
+		return $matches[1];
 	}
 
 	/**
@@ -275,33 +287,19 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 * @param string $directory Directory to search for templates
 	 */
 	private function get_templates($directory) {
-		// Get all files
-		$files = scandir($directory);
-
-		// Loop over all the files, recurse if it is a directory
 		$templates = [];
-		foreach ($files as $file) {
-			if ($file[0] == '.') {
+		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory), \RecursiveIteratorIterator::LEAVES_ONLY) as $file)
+		{
+		    if ($file->isFile() === false) {
+		        continue;
+		    }
+
+			if ($file->getExtension() != 'twig' && $file->getExtension() != 'tpl') {
 				continue;
 			}
 
-			// If it is a directory, recurse
-			if (is_dir($directory . '/' . $file)) {
-				$dir_templates = $this->get_templates($directory . '/' . $file);
-				foreach ($dir_templates as $dir_template) {
-					$templates[] = $dir_template;
-				}
-				continue;
-			}
-
-			// If it is a file that we support, add it to the result
-			if (strpos($file, '.') !== false) {
-				$file_parts = explode('.', $file);
-				$extension = array_pop($file_parts);
-				if ($extension == 'twig' OR $extension == 'tpl' OR $extension == 'php') {
-					$templates[] = $directory . '/' . $file;
-				}
-			}
+		    $resource = str_replace($directory, '', $file);
+		    $templates[] = $resource;
 		}
 
 		return $templates;

@@ -4,8 +4,12 @@
  *
  * Contains general purpose utilities
  *
+ * Code is based on Symfony/translation package (Fabien Potencier)
+ * https://github.com/symfony/translation
+ *
  * @author Christophe Gosiau <christophe@tigron.be>
  * @author Gerry Demaret <gerry@tigron.be>
+ * @author David Vandemaele <david@tigron.be>
  */
 
 namespace Skeleton\I18n;
@@ -24,21 +28,53 @@ class Util {
 			return [];
 		}
 		$content = file_get_contents($filename);
+		$lines = explode("\n", $content);
 
-		$matched = preg_match_all('/(msgid\s+("([^"]|\\\\")*?"\s*)+)\s+(msgstr\s+("([^"]|\\\\")*?"\s*)+)/',	$content, $matches);
+		$defaults = [
+				   'ids' => [],
+				   'translated' => null,
+		];
 
-		if (!$matched) {
-			return [];
+		$item = $defaults;
+		$flags = [];
+
+		foreach ($lines as $line) {
+		    $line = trim($line);
+		    if ($line === '') {
+		        // Whitespace indicated current item is done
+		        if (!in_array('fuzzy', $flags)) {
+		            self::add_message($strings, $item);
+		        }
+		        $item = $defaults;
+		        $flags = array();
+		    } elseif (substr($line, 0, 2) === '#,') {
+		        $flags = array_map('trim', explode(',', substr($line, 2)));
+		    } elseif (substr($line, 0, 7) === 'msgid "') {
+		        // We start a new msg so save previous
+		        // TODO: this fails when comments or contexts are added
+		        self::add_message($strings, $item);
+		        $item = $defaults;
+		        $item['ids']['singular'] = substr($line, 7, -1);
+		    } elseif (substr($line, 0, 8) === 'msgstr "') {
+		        $item['translated'] = substr($line, 8, -1);
+		    } elseif ($line[0] === '"') {
+		        $continues = isset($item['translated']) ? 'translated' : 'ids';
+		        if (is_array($item[$continues])) {
+		            end($item[$continues]);
+		            $item[$continues][key($item[$continues])] .= substr($line, 1, -1);
+		        } else {
+		            $item[$continues] .= substr($line, 1, -1);
+		        }
+		    } elseif (substr($line, 0, 14) === 'msgid_plural "') {
+		        $item['ids']['plural'] = substr($line, 14, -1);
+		    } elseif (substr($line, 0, 7) === 'msgstr[') {
+		        $size = strpos($line, ']');
+		        $item['translated'][(int) substr($line, 7, 1)] = substr($line, $size + 3, -1);
+		    }
 		}
-
-		// get all msgids and msgtrs
-		for ($i = 0; $i < $matched; $i++) {
-			$msgid = preg_replace('/\s*msgid\s*"(.*)"\s*/s', '\\1', $matches[1][$i]);
-			$msgstr= preg_replace('/\s*msgstr\s*"(.*)"\s*/s', '\\1', $matches[4][$i]);
-
-			if (self::prepare_load_string($msgid) !== '') {
-				$strings[self::prepare_load_string($msgid)] = self::prepare_load_string($msgstr);
-			}
+		// save last item
+		if (!in_array('fuzzy', $flags)) {
+		    self::add_message($strings, $item);
 		}
 
 		return $strings;
@@ -78,7 +114,7 @@ class Util {
 	 * @param array $strings
 	 */
 	public static function save($filename, $project, $language, $strings) {
-		ksort($strings);
+		ksort($strings, SORT_STRING | SORT_FLAG_CASE);
 		$dir = dirname($filename);
 		if (!file_exists($dir)) {
 			mkdir($dir, 0755, true);
@@ -149,18 +185,24 @@ class Util {
 		self::save($base, $extra_strings);
 	}
 
-	/**
-	 * Get all strings from a template
-	 *
-	 * @access public
-	 * @param string $html
-	 * @return array $strings
-	 */
-	public static function get_strings_from_template($template) {
-		if (preg_match_all("/\{t\}(.*?)\{\/t\}/", $template, $strings) == false) {
-			return [];
-		} else {
-			return $strings[1];
-		}
-	}
+	private static function add_message(array &$strings, array $item) {
+        if (is_array($item['translated'])) {
+            $strings[stripcslashes($item['ids']['singular'])] = stripcslashes($item['translated'][0]);
+            if (isset($item['ids']['plural'])) {
+                $plurals = $item['translated'];
+                // PO are by definition indexed so sort by index.
+                ksort($plurals);
+                // Make sure every index is filled.
+                end($plurals);
+                $count = key($plurals);
+                // Fill missing spots with '-'.
+                $empties = array_fill(0, $count + 1, '-');
+                $plurals += $empties;
+                ksort($plurals);
+                $strings[stripcslashes($item['ids']['plural'])] = stripcslashes(implode('|', $plurals));
+            }
+        } elseif (!empty($item['ids']['singular'])) {
+            $strings[stripcslashes($item['ids']['singular'])] = stripcslashes($item['translated']);
+        }
+    }
 }
