@@ -50,7 +50,11 @@ class Twig implements \Twig_NodeVisitorInterface {
     public function enterNode(\Twig_NodeInterface $node, \Twig_Environment $env) {
 		if ($node instanceof \Skeleton\I18n\Template\Twig\Extension\Node\Trans\Tigron) {
             if ($node->getNodeTag() == 'trans') {
-                $this->extracted[] = $node->getNode('body')->getAttribute('value');
+            	try {
+	                $this->extracted[] = $node->getNode('body')->getAttribute('value');
+				} catch (\Exception $e) {
+	                $this->extracted[] = $node->getNode('body')->getAttribute('data');
+				}
             }
         } elseif ($node instanceof \Twig_Node_Print) {
             $n = $node->getNode('expr');

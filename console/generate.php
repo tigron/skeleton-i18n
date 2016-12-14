@@ -63,6 +63,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		}
 
 		$packages = \Skeleton\Core\Package::get_all();
+
 		foreach ($packages as $package) {
 			$log = $this->translate_skeleton_package($package);
 			$output->writeln($log);
@@ -77,11 +78,14 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 * @param string $application Name of the application
 	 * @param string $directory Application path
 	 */
-	private function translate_skeleton_package(\Skeleton\Core\Package $package) {
+	private function translate_skeleton_package(\Skeleton\Core\Skeleton $package) {
 		$log = '';
 		$log .= 'translating ' . $package->name . ' (' . $package->template_path . ')' . "\n";
 
 		// Fetch the templates in this directory
+		if (!file_exists($package->template_path)) {
+			return;
+		}
 		$templates = $this->get_templates($package->template_path);
 		$strings = [];
 
@@ -233,6 +237,10 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	}
 
 	private function get_twig_strings($file, $directory) {
+		if ($file != '/template/object/product/type/version.twig') {
+			return [];
+		}
+
 		$loader = new \Twig_Loader_Filesystem($directory);
 
 		// force auto-reload to always have the latest version of the template
@@ -257,7 +265,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	}
 
 	private function get_smarty_strings($file, $directory) {
-		$content = file_get_contents($file);
+		$content = file_get_contents($directory . '/' . $file);
 		preg_match_all("/\{t\}(.*?)\{\/t\}/", $content, $matches);
 		return $matches[1];
 	}
