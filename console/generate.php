@@ -237,10 +237,6 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	}
 
 	private function get_twig_strings($file, $directory) {
-		if ($file != '/template/object/product/type/version.twig') {
-			return [];
-		}
-
 		$loader = new \Twig_Loader_Filesystem($directory);
 
 		// force auto-reload to always have the latest version of the template
