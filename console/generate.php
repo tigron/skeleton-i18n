@@ -134,6 +134,13 @@ class I18n_Generate extends \Skeleton\Console\Command {
 				}
 			}
 
+			$result1 = array_diff_key($new_po, $local_translated);
+			$result2 = array_diff_key($local_translated, $new_po);
+			if (count($result1) == 0 and count($result2) == 0) {
+				// No new po file will be created, there are no changes
+				continue;
+			}
+
 			// Stop doing what we are doing if there are no strings anyway
 			if (count($new_po) == 0) {
 				continue;
@@ -160,7 +167,6 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		// Fetch the templates in this directory
 		$templates = $this->get_templates($directory);
 		$strings = [];
-
 		// Parse all the files we found
 		foreach ($templates as $template) {
 			$log .= $template . "\n";
@@ -173,6 +179,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			throw new \Exception('The language interface does not exists: ' . $language_interface);
 		}
 		$languages = $language_interface::get_all();
+
 		foreach ($languages as $language) {
 			// Don't create a .po file if it is our base_language
 			if ($language->name_short == \Skeleton\I18n\Config::$base_language) {
@@ -198,6 +205,13 @@ class I18n_Generate extends \Skeleton\Console\Command {
 				} else {
 					$new_po[$string] = '';
 				}
+			}
+
+			$result1 = array_diff_key($new_po, $translated);
+			$result2 = array_diff_key($translated, $new_po);
+			if (count($result1) == 0 and count($result2) == 0) {
+				// No new po file will be created, there are no changes
+				continue;
 			}
 
 			// Stop doing what we are doing if there are no strings anyway
@@ -237,27 +251,29 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	}
 
 	private function get_twig_strings($file, $directory) {
-		$loader = new \Twig_Loader_Filesystem($directory);
+		if (!isset($this->twig_extractor[$directory])) {
+			$loader = new \Twig_Loader_Filesystem($directory);
 
-		// force auto-reload to always have the latest version of the template
-		$twig = new \Twig_Environment($loader, [
-		    'cache' => \Skeleton\Template\Twig\Config::$cache_directory,
-		    'auto_reload' => true
-		]);
-		$twig->addExtension(new \Twig_Extensions_Extension_I18n());
-		$twig->addExtension(new \Twig_Extension_StringLoader());
-		$twig->addExtension(new \Twig_Extensions_Extension_Text());
-		$twig->addExtension(new \Skeleton\Template\Twig\Extension\Common());
-		$twig->addExtension(new \Skeleton\I18n\Template\Twig\Extension\Tigron());
-		$parser = new \Skeleton\Template\Twig\Extension\Markdown\Engine();
-		$parser->single_linebreak = true;
-		$twig->addExtension(new MarkdownExtension(
-			$parser
-		));
+			// force auto-reload to always have the latest version of the template
+			$twig = new \Twig_Environment($loader, [
+				'cache' => \Skeleton\Template\Twig\Config::$cache_directory,
+				'auto_reload' => true
+			]);
+			$twig->addExtension(new \Twig_Extensions_Extension_I18n());
+			$twig->addExtension(new \Twig_Extension_StringLoader());
+			$twig->addExtension(new \Twig_Extensions_Extension_Text());
+			$twig->addExtension(new \Skeleton\Template\Twig\Extension\Common());
+			$twig->addExtension(new \Skeleton\I18n\Template\Twig\Extension\Tigron());
+			$parser = new \Skeleton\Template\Twig\Extension\Markdown\Engine();
+			$parser->single_linebreak = true;
+			$twig->addExtension(new MarkdownExtension(
+				$parser
+			));
+			$this->twig_extractor[$directory] = new \Skeleton\I18n\Extractor\Twig($twig);
+		}
 
-		$twig_extractor = new \Skeleton\I18n\Extractor\Twig($twig);
 
-		return $twig_extractor->extract($file);
+		return $this->twig_extractor[$directory]->extract($file);
 	}
 
 	private function get_smarty_strings($file, $directory) {
