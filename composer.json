@@ -2,9 +2,10 @@
     "name": "tigron/skeleton-i18n",
     "description": "Translation and internationalization for Skeleton",
     "type": "library",
-    "require-dev": {
-		"tigron/skeleton-database": "dev-master",
-		"tigron/skeleton-object": "dev-master"
+    "require": {
+    	"/tigron/skeleton-migrate": "*",
+		"tigron/skeleton-object": "*",
+		"tigron/skeleton-database": "*",
     },
     "license": "MIT",
     "authors": [
