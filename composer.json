@@ -5,7 +5,7 @@
     "require": {
     	"/tigron/skeleton-migrate": "*",
 		"tigron/skeleton-object": "*",
-		"tigron/skeleton-database": "*",
+		"tigron/skeleton-database": "*"
     },
     "license": "MIT",
     "authors": [
