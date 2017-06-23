@@ -3,9 +3,9 @@
     "description": "Translation and internationalization for Skeleton",
     "type": "library",
     "require": {
-    	"/tigron/skeleton-migrate": "*",
-		"tigron/skeleton-object": "*",
-		"tigron/skeleton-database": "*"
+    	"tigron/skeleton-migrate": "*",
+	"tigron/skeleton-object": "*",
+	"tigron/skeleton-database": "*"
     },
     "license": "MIT",
     "authors": [
