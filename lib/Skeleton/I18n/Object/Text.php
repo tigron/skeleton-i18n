@@ -2,8 +2,6 @@
 /**
  * Object_Text class
  *
- * FIXME: this shouldn't be here at all!
- *
  * @author Christophe Gosiau <christophe@tigron.be>
  * @author Gerry Demaret <gerry@tigron.be>
  * @author David Vandemaele <david@tigron.be>
@@ -36,7 +34,11 @@ class Text {
 	 */
 	public function __set($key, $value) {
 		if ($key == 'object') {
-			$this->details['classname'] = get_class($value);
+			$classname = get_parent_class($value);
+			if ($classname === false) {
+				$classname = get_class($value);
+			}
+			$this->details['classname'] = $classname;
 			if ($value->id === null) {
 				$value->save();
 			}
@@ -85,8 +87,8 @@ class Text {
 	public static function get_by_object($object) {
 		$db = Database::Get();
 		$class = get_class($object);
-		$data = $db->get_all('SELECT * FROM object_text WHERE classname=? AND object_id=?', array($class, $object->id));
-		$object_texts = array();
+		$data = $db->get_all('SELECT * FROM object_text WHERE classname=? AND object_id=?', [ $class, $object->id ]);
+		$object_texts = [];
 		foreach ($data as $details) {
 			$object_text = new self();
 			$object_text->id = $details['id'];
@@ -107,35 +109,39 @@ class Text {
 	 * @param Language $language
 	 */
 	public static function get_by_object_label_language($object, $label, \Skeleton\I18n\LanguageInterface $language, $auto_create = true) {
-		if (method_exists(get_class($object), 'cache_get')) {
+		$class = get_parent_class($object);
+		if ($class === false) {
+			$class = get_class($object);
+		}
+
+		if (method_exists($class, 'cache_get')) {
 			try {
-				$key = get_class($object) . '_' . $object->id . '_' . $label . '_' . $language->name_short;
+                $key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
 				$object = $object::cache_get($key);
 				return $object;
 			} catch (\Exception $e) {}
-		}
+        }
 
-		$db = Database::Get();
-		$class = get_class($object);
-		$data = $db->get_row('SELECT * FROM object_text WHERE classname=? AND object_id=? AND label=? AND language_id=?', array($class, $object->id, $label, $language->id));
+        $db = Database::Get();
+		$data = $db->get_row('SELECT * FROM object_text WHERE classname=? AND object_id=? AND label=? AND language_id=?', [ $class, $object->id, $label, $language->id ]);
 
 		if ($data === null) {
-			if (!$auto_create) {
-				throw new \Exception('Object text does not exists');
+		    if (!$auto_create) {
+			    throw new \Exception('Object text does not exists');
 			} else {
 				$requested = new self();
-				$requested->object = $object;
+                $requested->object = $object;
 				$requested->language_id = $language->id;
 				$requested->label = $label;
 				$requested->content = '';
 				$requested->save();
 
-				if (method_exists(get_class($object), 'cache_set')) {
-			    		$key = get_class($object) . '_' . $object->id . '_' . $label . '_' . $language->name_short;
-			    		$object::cache_set($key, $requested);
-				}
+                if (method_exists($class, 'cache_set')) {
+                    $key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
+                    $object::cache_set($key, $requested);
+                }
 
-				return $requested;
+                return $requested;
 			}
 		}
 
@@ -143,10 +149,10 @@ class Text {
 		$object_text->id = $data['id'];
 		$object_text->details = $data;
 
-		if (method_exists(get_class($object), 'cache_set')) {
-		    $key = get_class($object) . '_' . $object->id . '_' . $label . '_' . $language->name_short;
-		    $object::cache_set($key, $object_text);
-		}
+        if (method_exists($class, 'cache_set')) {
+            $key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
+            $object::cache_set($key, $object_text);
+        }
 
 		return $object_text;
 	}
@@ -160,8 +166,8 @@ class Text {
 	 */
 	public static function get_by_object_classname($classname) {
 		$db = Database::Get();
-		$ids = $db->getCol('SELECT id FROM object_text WHERE classname=?', array($classname));
-		$object_texts = array();
+		$ids = $db->getCol('SELECT id FROM object_text WHERE classname=?', [ $classname ]);
+		$object_texts = [];
 		foreach ($ids as $id) {
 			$object_texts[] = self::get_by_id($id);
 		}
@@ -177,8 +183,8 @@ class Text {
 	 */
 	public static function get_by_classname_language($classname, \Skeleton\I18n\Language $language) {
 		$db = Database::Get();
-		$ids = $db->getCol('SELECT id FROM object_text WHERE classname=? AND language_id=?', array($classname, $language->id));
-		$object_texts = array();
+		$ids = $db->getCol('SELECT id FROM object_text WHERE classname=? AND language_id=?', [ $classname, $language->id ]);
+		$object_texts = [];
 		foreach ($ids as $id) {
 			$object_texts[] = self::get_by_id($id);
 		}
@@ -193,7 +199,7 @@ class Text {
 	 */
 	public static function get_classnames() {
 		$db = Database::Get();
-		$classnames = $db->get_column('SELECT DISTINCT(classname) FROM object_text', array());
+		$classnames = $db->get_column('SELECT DISTINCT(classname) FROM object_text', []);
 		return $classnames;
 	}
 }
