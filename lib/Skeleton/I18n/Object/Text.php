@@ -34,9 +34,11 @@ class Text {
 	 */
 	public function __set($key, $value) {
 		if ($key == 'object') {
-			$classname = get_parent_class($value);
-			if ($classname === false) {
+			$class_parents = class_parents($value);
+			if ($class_parents === false OR count($class_parents) == 0) {
 				$classname = get_class($value);
+			} else {
+				$classname = array_pop($class_parents);
 			}
 			$this->details['classname'] = $classname;
 			if ($value->id === null) {
@@ -110,7 +112,7 @@ class Text {
 	 */
 	public static function get_by_object_label_language($object, $label, \Skeleton\I18n\LanguageInterface $language, $auto_create = true) {
 		$class_parents = class_parents($object);
-		if ($class_parents === false) {
+		if ($class_parents === false OR count($class_parents) == 0) {
 			$class = get_class($object);
 		} else {
 			$class = array_pop($class_parents);
