@@ -109,9 +109,11 @@ class Text {
 	 * @param Language $language
 	 */
 	public static function get_by_object_label_language($object, $label, \Skeleton\I18n\LanguageInterface $language, $auto_create = true) {
-		$class = get_parent_class($object);
-		if ($class === false) {
+		$class_parents = class_parents($object);
+		if ($class_parents === false) {
 			$class = get_class($object);
+		} else {
+			$class = array_pop($class_parents);
 		}
 
 		if (method_exists($class, 'cache_get')) {
