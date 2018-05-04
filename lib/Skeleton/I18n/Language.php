@@ -15,6 +15,7 @@ class Language implements LanguageInterface {
 	use \Skeleton\Object\Save;
 	use \Skeleton\Object\Delete;
 	use \Skeleton\Object\Get;
+	use \Skeleton\Object\Cache;
 
 	/**
 	 * Language
@@ -39,7 +40,8 @@ class Language implements LanguageInterface {
 			throw new \Exception('No such language');
 		}
 
-		return self::get_by_id($id);
+		$language = self::get_by_id($id);
+		return $language;
 	}
 
 	/**

@@ -118,7 +118,7 @@ class Text {
 			$class = array_pop($class_parents);
 		}
 
-		if (method_exists($class, 'cache_get')) {
+		if (self::trait_cache_enabled()) {
 			try {
                 $key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
 				$object = $object::cache_get($key);
@@ -140,7 +140,7 @@ class Text {
 				$requested->content = '';
 				$requested->save();
 
-                if (method_exists($class, 'cache_set')) {
+				if (self::trait_cache_enabled()) {
                     $key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
                     $object::cache_set($key, $requested);
                 }
@@ -153,7 +153,7 @@ class Text {
 		$object_text->id = $data['id'];
 		$object_text->details = $data;
 
-        if (method_exists($class, 'cache_set')) {
+		if (self::trait_cache_enabled()) {
             $key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
             $object::cache_set($key, $object_text);
         }
