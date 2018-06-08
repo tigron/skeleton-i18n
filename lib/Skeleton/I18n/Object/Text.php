@@ -122,7 +122,7 @@ class Text {
 		if (self::trait_cache_enabled()) {
 			try {
                 $key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
-				$object = $object::cache_get($key);
+				$object = self::cache_get($key);
 				return $object;
 			} catch (\Exception $e) {}
         }
@@ -143,7 +143,7 @@ class Text {
 
 				if (self::trait_cache_enabled()) {
                     $key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
-                    $object::cache_set($key, $requested);
+                    self::cache_set($key, $requested);
                 }
 
                 return $requested;
@@ -156,7 +156,7 @@ class Text {
 
 		if (self::trait_cache_enabled()) {
             $key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
-            $object::cache_set($key, $object_text);
+            self::cache_set($key, $object_text);
         }
 
 		return $object_text;
