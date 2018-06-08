@@ -15,6 +15,7 @@ class Text {
 	use \Skeleton\Object\Save;
 	use \Skeleton\Object\Get;
 	use \Skeleton\Object\Delete;
+	use \Skeleton\Object\Cache;
 
 	/**
 	 * class_configuration
