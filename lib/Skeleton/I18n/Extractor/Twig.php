@@ -50,11 +50,21 @@ class Twig implements \Twig_NodeVisitorInterface {
 	public function enterNode(\Twig_NodeInterface $node, \Twig_Environment $env) {
 		if ($node instanceof \Skeleton\I18n\Template\Twig\Extension\Node\Trans\Tigron) {
 			if ($node->getNodeTag() == 'trans') {
+				$extracted = null;
+
 				try {
-					$this->extracted[] = $node->getNode('body')->getAttribute('value');
-				} catch (\Exception $e) {
-					$this->extracted[] = $node->getNode('body')->getAttribute('data');
+					$extracted = $node->getNode('body')->getAttribute('value');
+				} catch (\Exception $e) {}
+
+				try {
+					$extracted = $node->getNode('body')->getAttribute('data');
+				} catch (\Exception $e) {}
+
+				if ($extracted === null) {
+					throw new \Exception('Template syntax error in ' . $node->getNode('body')->getTemplateName() . ' on line ' . $node->getNode('body')->getTemplateLine());
 				}
+
+				$this->extracted[] = $extracted;
 			}
 		} elseif ($node instanceof \Twig_Node_Print) {
 			$n = $node->getNode('expr');
