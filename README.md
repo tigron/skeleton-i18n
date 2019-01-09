@@ -53,4 +53,7 @@ Via a twig template rendered by skeleton-template-twig:
 
 Directly via PHP:
 
-	\Skeleton\I18n\Translation::translate('To be translated', 'admin');
+	$language = Language::get_by_name_short('en');
+	$application_name = 'admin';
+	$translation = \Skeleton\I18n\Translation::get($language, $application_name);
+	\Skeleton\I18n\Translation::translate('To be translated', $translation);
