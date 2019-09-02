@@ -99,6 +99,15 @@ class Twig implements \Twig_NodeVisitorInterface {
 					}
 				}
 			}
+		} elseif ($node instanceof \Twig_Node_Expression_Filter) {
+			$data = $node->getIterator();
+			foreach ($data as $row) {
+				try {
+					if ($row->hasNode('filter') AND $row->getNode('filter')->getAttribute('value') == 'trans') {
+						$this->extracted[] = $row->getNode('node')->getAttribute('value');
+					}
+				} catch (\Exception $e) {}
+			}
 		}
 
 		return $node;
@@ -117,5 +126,4 @@ class Twig implements \Twig_NodeVisitorInterface {
 	public function getPriority() {
 		return 0;
 	}
-
 }
