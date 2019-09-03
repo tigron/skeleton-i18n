@@ -19,4 +19,12 @@ interface LanguageInterface {
 	 */
 	public static function get_by_name_short($name);
 
+	/**
+	 * Detect the language based on the HTTP_ACCEPT_LANGUAGE header
+	 *
+	 * @access public
+	 * @return LanguageInterface $language
+	 */
+	public static function detect();
+
 }

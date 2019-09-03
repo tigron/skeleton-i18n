@@ -45,6 +45,30 @@ class Language implements LanguageInterface {
 	}
 
 	/**
+	 * Detect the language based on the HTTP_ACCEPT_LANGUAGE header
+	 *
+	 * @access public
+	 * @return LanguageInterface $language
+	 */
+	public static function detect() {
+		if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+			throw new \Exception('Language cannot be detected, no HTTP_ACCEPT_LANGUAGE header set');
+		}
+
+		$languages = self::get_all();
+		$available_languages = [];
+		foreach ($languages as $language) {
+			$available_languages[] = $language->name_short;
+		}
+
+		$accept_factory = new \Aura\Accept\AcceptFactory($_SERVER);
+		$accept = $accept_factory->newInstance();
+		$language = $accept->negotiateLanguage($available_languages);
+
+		return self::get_by_name_short($language->getValue());
+	}
+
+	/**
 	 * Set the current language
 	 *
 	 * @access public
