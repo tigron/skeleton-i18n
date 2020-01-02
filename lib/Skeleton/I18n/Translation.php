@@ -75,11 +75,11 @@ class Translation {
 			return $string;
 		}
 
-		if (!isset($this->strings[$string])) {
+		if (!isset($this->strings[$string]) && Config::$auto_fill_po) {
 			$this->add_to_po($string);
 		}
 
-		if ($this->strings[$string] == '') {
+		if (!Config::$auto_fill_po || $this->strings[$string] == '') {
 			if (Config::$debug) {
 				return '[NT]' . $string;
 			} else {

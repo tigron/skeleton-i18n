@@ -4,7 +4,6 @@
 
 This library enables internationalization and translation features in Skeleton.
 
-
 ## Installation
 
 Installation via composer:
@@ -23,7 +22,8 @@ Configure the package:
 	 * The the directory to store the po files
 	 */
 	\Skeleton\I18n\Config::$po_directory = '/my_app/po';
-	/**
+
+    /**
 	 * Define a temporary folder to cache all translations
 	 */
 	\Skeleton\I18n\Config::$cache_directory = '/my_app/tmp/languages';
@@ -43,6 +43,13 @@ Configure the package:
 	 * Set another Language interface
 	 */
 	\Skeleton\I18n\Config::$language_interface = 'Language';
+
+    /**
+	 * Optional:
+	 * Enable auto fill po file when requesting translation
+     * Default to false
+	 */
+	\Skeleton\I18n\Config::$auto_fill_po = true;
 
 
 Use it:

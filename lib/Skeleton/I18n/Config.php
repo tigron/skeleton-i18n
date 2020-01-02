@@ -40,6 +40,9 @@ class Config {
 	 * Language interface class
 	 *
 	 * This class will provide the Language functionality, by default a class is defined
+	 *
+	 * @access public
+	 * @var string $language_interface
 	 */
 	public static $language_interface = '\Skeleton\I18n\Language';
 
@@ -55,9 +58,17 @@ class Config {
 	 * Additional template dirs
 	 *
 	 * @access public
-	 * @param array $additional_template_dirs
+	 * @var array $additional_template_dirs
 	 */
 	public static $additional_template_paths = [
 		#'key' => 'path',
 	];
+
+	/**
+	 * Should the po be prefilled when requesting a new string
+	 *
+	 * @access public
+	 * @var bool $auto_fill_po
+	 */
+	public static $auto_fill_po = false;
 }
