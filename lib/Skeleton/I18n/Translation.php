@@ -79,7 +79,7 @@ class Translation {
 			$this->add_to_po($string);
 		}
 
-		if (!Config::$auto_fill_po || $this->strings[$string] == '') {
+		if (empty($this->strings[$string])) {
 			if (Config::$debug) {
 				return '[NT]' . $string;
 			} else {
