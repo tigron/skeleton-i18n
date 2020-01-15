@@ -252,25 +252,19 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 	private function get_twig_strings($file, $directory) {
 		if (!isset($this->twig_extractor[$directory])) {
-			$loader = new \Twig_Loader_Filesystem($directory);
+			$loader = new \Twig\Loader\FilesystemLoader($directory);
 
 			// force auto-reload to always have the latest version of the template
-			$twig = new \Twig_Environment($loader, [
+			$twig = new \Twig\Environment($loader, [
 				'cache' => \Skeleton\Template\Twig\Config::$cache_directory,
 				'auto_reload' => true
 			]);
 
-			$twig->addExtension(new \Twig_Extensions_Extension_I18n());
-			$twig->addExtension(new \Twig_Extension_StringLoader());
-			$twig->addExtension(new \Twig_Extensions_Extension_Text());
+			$twig->addExtension(new \Twig\Extension\StringLoaderExtension());
 			$twig->addExtension(new \Skeleton\Template\Twig\Extension\Common());
 			$twig->addExtension(new \Skeleton\I18n\Template\Twig\Extension\Tigron());
-
-			$parser = new \Skeleton\Template\Twig\Extension\Markdown\Engine();
-			$parser->single_linebreak = true;
-			$twig->addExtension(new MarkdownExtension(
-				$parser
-			));
+			$twig->addExtension(new \Twig\Extra\Markdown\MarkdownExtension());
+			$twig->addExtension(new \Twig\Extra\String\StringExtension());
 
 			$extensions = \Skeleton\Template\Twig\Config::get_extensions();
 			foreach ($extensions as $extension) {
@@ -279,7 +273,6 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 			$this->twig_extractor[$directory] = new \Skeleton\I18n\Extractor\Twig($twig);
 		}
-
 
 		return $this->twig_extractor[$directory]->extract($file);
 	}
