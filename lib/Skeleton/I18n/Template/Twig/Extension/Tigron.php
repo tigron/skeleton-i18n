@@ -8,14 +8,16 @@
 
 namespace Skeleton\I18n\Template\Twig\Extension;
 
-class Tigron extends \Twig_Extensions_Extension_I18n {
+class Tigron extends \Twig\Extension\AbstractExtension {
 	/**
 	 * Returns the token parser instances to add to the existing list.
 	 *
 	 * @return array An array of Twig_TokenParserInterface or Twig_TokenParserBrokerInterface instances
 	 */
 	public function getTokenParsers() {
-		return [new TokenParser()];
+		return [
+			new TokenParser()
+		];
 	}
 
 	/**
@@ -24,7 +26,7 @@ class Tigron extends \Twig_Extensions_Extension_I18n {
 	 * @return array An array of filters
 	 */
 	public function getFilters() {
-		$translation_filter = new \Twig_SimpleFilter('trans', function (\Twig_Environment $env, $string) {
+		$translation_filter = new \Twig\TwigFilter('trans', function (\Twig\Environment $env, $string) {
 			$globals = $env->getGlobals();
 			$translation = $globals['env']['translation'];
 			return \Skeleton\I18n\Translation::translate($string, $translation);

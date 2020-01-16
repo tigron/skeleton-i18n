@@ -17,11 +17,11 @@ namespace Skeleton\I18n\Template\Twig\Extension\Node\Trans;
  * @package    twig
  * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class Tigron extends \Twig_Node
+class Tigron extends \Twig\Node\Node
 {
-    public function __construct(\Twig_NodeInterface $body, \Twig_NodeInterface $plural = null, \Twig_Node_Expression $count = null, $lineno, $tag = null)
+    public function __construct($name, \Twig\Node\Expression\ConstantExpression $value, $line, $tag = null)
     {
-        parent::__construct(['count' => $count, 'body' => $body, 'plural' => $plural], [], $lineno, $tag);
+        parent::__construct([ 'value' => $value ], [ 'name' => $name ], $line, $tag);
     }
 
     /**
@@ -29,19 +29,19 @@ class Tigron extends \Twig_Node
      *
      * @param Twig_Compiler A Twig_Compiler instance
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(\Twig\Compiler $compiler)
     {
         $compiler->addDebugInfo($this);
 
-        list($msg, $vars) = $this->compileString($this->getNode('body'));
+        list($msg, $vars) = $this->compileString($this->getNode('value'));
 
-        if (null !== $this->getNode('plural')) {
+        /*if (null !== $this->getNode('plural')) {
             list($msg1, $vars1) = $this->compileString($this->getNode('plural'));
 
             $vars = array_merge($vars, $vars1);
-        }
+        }*/
 
-        $function = null === $this->getNode('plural') ? '\Skeleton\I18n\Translation::translate' : '\Skeleton\I18n\Translation::translate_plural';
+        $function = '\Skeleton\I18n\Translation::translate';
 
         if ($vars) {
             $compiler
@@ -49,7 +49,7 @@ class Tigron extends \Twig_Node
                 ->subcompile($msg)
             ;
 
-            if (null !== $this->getNode('plural')) {
+            /*if (null !== $this->getNode('plural')) {
                 $compiler
                     ->raw(', ')
                     ->subcompile($msg1)
@@ -57,7 +57,7 @@ class Tigron extends \Twig_Node
                     ->subcompile($this->getNode('count'))
                     ->raw(')')
                 ;
-            }
+            }*/
 
             $compiler->raw(', $context[\'env\'][\'translation\']), array(');
 
@@ -86,7 +86,7 @@ class Tigron extends \Twig_Node
                 ->subcompile($msg)
             ;
 
-            if (null !== $this->getNode('plural')) {
+            /*if (null !== $this->getNode('plural')) {
                 $compiler
                     ->raw(', ')
                     ->subcompile($msg1)
@@ -94,23 +94,27 @@ class Tigron extends \Twig_Node
                     ->subcompile($this->getNode('count'))
                     ->raw(')')
                 ;
-            }
+            }*/
 
             $compiler->raw(", " . '$context[\'env\'][\'translation\']' . ");\n");
         }
     }
 
-    protected function compileString(\Twig_NodeInterface $body)
+    protected function compileString(\Twig\Node\Expression\ConstantExpression $value)
     {
-        if ($body instanceof \Twig_Node_Expression_Name || $body instanceof \Twig_Node_Expression_Constant || $body instanceof \Twig_Node_Expression_TempName) {
-            return [$body, []];
+        if (
+            $value instanceof \Twig\Node\Expression\NameExpression
+            || $value instanceof \Twig\Node\Expression\ConstantExpression
+            || $value instanceof \Twig\Node\Expression\TempNameExpression
+        ) {
+            return [$value, []];
         }
 
         $vars = [];
-        if (count($body)) {
+        if (count($value)) {
             $msg = '';
 
-            foreach ($body as $node) {
+            foreach ($value as $node) {
                 if (get_class($node) === 'Twig_Node' && $node->getNode(0) instanceof \Twig_Node_SetTemp) {
                     $node = $node->getNode(1);
                 }
@@ -127,9 +131,9 @@ class Tigron extends \Twig_Node
                 }
             }
         } else {
-            $msg = $body->getAttribute('data');
+            $msg = $value->getAttribute('data');
         }
 
-        return [new \Twig_Node([new \Twig_Node_Expression_Constant(trim($msg), $body->getLine())]), $vars];
+        return [new \Twig_Node([new \Twig_Node_Expression_Constant(trim($msg), $value->getLine())]), $vars];
     }
 }

@@ -4,13 +4,23 @@
  *
  * @author Christophe Gosiau <christophe@tigron.be>
  * @author Gerry Demaret <gerry@tigron.be>
+ * @author David Vandemaele <david@tigron.be>
  */
 
 namespace Skeleton\I18n\Template\Twig\Extension;
 
-class Node extends \Twig_Node {
-	public function __construct(\Twig_NodeInterface $body, \Twig_NodeInterface $plural = null, \Twig_Node_Expression $count = null, $lineno, $tag = null) {
-		parent::__construct(['count' => $count, 'body' => $body, 'plural' => $plural], [], $lineno, $tag);
+class Node extends \Twig\Node\Node {
+
+	/**
+	 * Constructor
+	 *
+	 * @param [type]                               $name  [description]
+	 * @param TwigNodeExpressionAbstractExpression $value [description]
+	 * @param [type]                               $line  [description]
+	 * @param [type]                               $tag   [description]
+	 */
+	public function __construct($name, \Twig\Node\Expression\AbstractExpression $value, $line, $tag = null) {
+		parent::__construct([ 'value' => $value ], [ 'name' => $name ], $line, $tag);
 	}
 
 	/**
@@ -18,7 +28,7 @@ class Node extends \Twig_Node {
 	 *
 	 * @param Twig_Compiler A Twig_Compiler instance
 	 */
-	public function compile(\Twig_Compiler $compiler) {
+	public function compile(\Twig\Compiler $compiler) {
 		$compiler->addDebugInfo($this);
 
 		list($msg, $vars) = $this->compileString($this->getNode('body'));
