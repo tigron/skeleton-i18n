@@ -4,7 +4,7 @@
  *
  * @author Gerry Demaret <gerry@tigron.be>
  * @author Christophe Gosiau <christophe@tigron.be>
- * @author David V&&emaele <david@tigron.be>
+ * @author David Vandemaele <david@tigron.be>
  */
 
 namespace Skeleton\I18n\Extractor;
