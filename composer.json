@@ -5,8 +5,7 @@
     "require": {
         "tigron/skeleton-migrate": "*",
         "tigron/skeleton-object": "*",
-        "tigron/skeleton-database": "*",
-        "aura/accept": "^2.2.5"
+        "tigron/skeleton-database": "*"
     },
     "license": "MIT",
     "authors": [
