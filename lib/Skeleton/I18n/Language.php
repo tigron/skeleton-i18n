@@ -61,15 +61,12 @@ class Language implements LanguageInterface {
 			$available_languages[] = $language->name_short;
 		}
 
-		$accept_factory = new \Aura\Accept\AcceptFactory($_SERVER);
-		$accept = $accept_factory->newInstance();
-		$language = $accept->negotiateLanguage($available_languages);
-
+		$language = Util::get_best_matching_language($_SERVER['HTTP_ACCEPT_LANGUAGE'], $available_languages);
 		if ($language === false) {
 			throw new \Exception('No matching language found');
 		}
 
-		return self::get_by_name_short($language->getValue());
+		return self::get_by_name_short($language);
 	}
 
 	/**
