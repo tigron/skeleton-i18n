@@ -137,7 +137,7 @@ class Util {
 				$language_string = 'zh_Hans';
 				break;
 			default:
-				$language_string = 'unknown';
+				$language_string = $language->name_short;
 		}
 
 		$output = '';
