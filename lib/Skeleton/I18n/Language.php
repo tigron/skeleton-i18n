@@ -40,8 +40,7 @@ class Language implements LanguageInterface {
 			throw new \Exception('No such language');
 		}
 
-		$language = self::get_by_id($id);
-		return $language;
+		return self::get_by_id($id);
 	}
 
 	/**
