@@ -4,6 +4,7 @@
  *
  * @author Christophe Gosiau <christophe@tigron.be>
  * @author Gerry Demaret <gerry@tigron.be>
+ * @author David Vandemaele <david@tigron.be>
  */
 
 namespace Skeleton\I18n;
@@ -33,6 +34,13 @@ class Language implements LanguageInterface {
 	 * @param string $name_short
 	 */
 	public static function get_by_name_short($name) {
+		if (self::trait_cache_enabled()) {
+			try {
+				$object = self::cache_get(get_class() . '_' . $name);
+				return $object;
+			} catch (\Exception $e) {}
+		}
+
 		$db = Database::Get();
 		$id = $db->get_one('SELECT id FROM language WHERE name_short=?', [$name]);
 
@@ -40,7 +48,8 @@ class Language implements LanguageInterface {
 			throw new \Exception('No such language');
 		}
 
-		return self::get_by_id($id);
+		$classname = Config::$language_interface;
+		return $classname::get_by_id($id);
 	}
 
 	/**
@@ -87,4 +96,5 @@ class Language implements LanguageInterface {
 	public static function get() {
 		return self::$language;
 	}
+
 }

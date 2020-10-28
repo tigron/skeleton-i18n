@@ -92,8 +92,7 @@ class Text {
 
 		if (self::trait_cache_enabled()) {
 			try {
-				$key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
-				$object = self::cache_get($key);
+				$object = self::cache_get($class . '_' . $object->id . '_' . $label . '_' . $language->name_short);
 				return $object;
 			} catch (\Exception $e) {}
 		}
@@ -113,8 +112,7 @@ class Text {
 				$requested->save();
 
 				if (self::trait_cache_enabled()) {
-					$key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
-					self::cache_set($key, $requested);
+					self::cache_set(self::trait_get_cache_key($requested));
 				}
 
 				return $requested;
@@ -126,8 +124,7 @@ class Text {
 		$object_text->details = $data;
 
 		if (self::trait_cache_enabled()) {
-			$key = $class . '_' . $object->id . '_' . $label . '_' . $language->name_short;
-			self::cache_set($key, $object_text);
+			self::cache_set(self::trait_get_cache_key($object_text), $object_text);
 		}
 
 		return $object_text;
@@ -180,5 +177,16 @@ class Text {
 	public static function get_classnames() {
 		$db = Database::Get();
 		return $db->get_column('SELECT DISTINCT(classname) FROM object_text', []);
+	}
+
+	/**
+	 * Get cache key
+	 *
+	 * @access public
+	 * @param mixed $object
+	 * @return string $key
+	 */
+	public static function trait_get_cache_key($object) {
+		return $object->classname . '_' . $object->object_id . '_' . $object->label . '_' . $object->language->name_short;
 	}
 }
