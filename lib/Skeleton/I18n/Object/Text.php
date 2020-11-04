@@ -112,7 +112,7 @@ class Text {
 				$requested->save();
 
 				if (self::trait_cache_enabled()) {
-					self::cache_set(self::trait_get_cache_key($requested));
+					self::cache_set(self::trait_get_cache_key($requested), $requested);
 				}
 
 				return $requested;
