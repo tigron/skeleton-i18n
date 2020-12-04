@@ -42,7 +42,7 @@ Configure the package:
 	 * Optional:
 	 * Set another Language interface
 	 */
-	\Skeleton\I18n\Config::$language_interface = 'Language';
+	\Skeleton\I18n\Config::$language_interface = '\Language';
 
     /**
 	 * Optional:

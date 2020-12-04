@@ -28,7 +28,7 @@ class Migration_20170519_155326_Object_text extends \Skeleton\Database\Migration
 			  `label` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
 			  `content` text COLLATE utf8_unicode_ci NOT NULL,
 			  `created` datetime NOT NULL,
-			  `updated` datetime NOT NULL,
+			  `updated` datetime NULL,
 			  PRIMARY KEY (`id`),
 			  KEY `classname` (`classname`),
 			  KEY `object_id` (`object_id`),
