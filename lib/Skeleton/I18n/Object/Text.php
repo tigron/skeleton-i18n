@@ -112,8 +112,8 @@ class Text {
 				$requested->save();
 
 				if (self::trait_cache_enabled()) {
-                    self::cache_set(self::trait_get_cache_key($requested), $requested);
-                }
+					self::cache_set(self::trait_get_cache_key($requested), $requested);
+				}
 
 				return $requested;
 			}
@@ -124,8 +124,8 @@ class Text {
 		$object_text->details = $data;
 
 		if (self::trait_cache_enabled()) {
-            self::cache_set(self::trait_get_cache_key($object_text), $object_text);
-        }
+			self::cache_set(self::trait_get_cache_key($object_text), $object_text);
+		}
 
 		return $object_text;
 	}
