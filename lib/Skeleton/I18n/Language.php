@@ -94,6 +94,10 @@ class Language implements LanguageInterface {
 	 * @return Language $language
 	 */
 	public static function get() {
+		if (isset(self::$language) === false) {
+			throw new \Exception('Language not set');
+		}
+
 		return self::$language;
 	}
 
