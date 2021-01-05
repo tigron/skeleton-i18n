@@ -41,7 +41,7 @@ class Language implements LanguageInterface {
 			} catch (\Exception $e) {}
 		}
 
-		$db = Database::Get();
+		$db = self::trait_get_database();
 		$id = $db->get_one('SELECT id FROM language WHERE name_short=?', [$name]);
 
 		if ($id === null) {

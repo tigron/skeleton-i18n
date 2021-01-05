@@ -58,7 +58,7 @@ class Text {
 	 * @param mixed $object
 	 */
 	public static function get_by_object($object) {
-		$db = Database::Get();
+		$db = self::trait_get_database();
 		$class = get_class($object);
 		$data = $db->get_all('SELECT * FROM object_text WHERE classname=? AND object_id=?', [ $class, $object->id ]);
 
@@ -97,7 +97,7 @@ class Text {
 			} catch (\Exception $e) {}
 		}
 
-		$db = Database::Get();
+		$db = self::trait_get_database();
 		$data = $db->get_row('SELECT * FROM object_text WHERE classname=? AND object_id=? AND label=? AND language_id=?', [ $class, $object->id, $label, $language->id ]);
 
 		if ($data === null) {
@@ -138,7 +138,7 @@ class Text {
 	 * @return array $object_texts
 	 */
 	public static function get_by_object_classname($classname) {
-		$db = Database::Get();
+		$db = self::trait_get_database();
 		$ids = $db->get_column('SELECT id FROM object_text WHERE classname=?', [ $classname ]);
 
 		$object_texts = [];
@@ -157,7 +157,7 @@ class Text {
 	 * @return array $object_texts
 	 */
 	public static function get_by_classname_language($classname, \Skeleton\I18n\Language $language) {
-		$db = Database::Get();
+		$db = self::trait_get_database();
 		$ids = $db->get_column('SELECT id FROM object_text WHERE classname=? AND language_id=?', [ $classname, $language->id ]);
 
 		$object_texts = [];
@@ -175,7 +175,7 @@ class Text {
 	 * @return array $classnames
 	 */
 	public static function get_classnames() {
-		$db = Database::Get();
+		$db = self::trait_get_database();
 		return $db->get_column('SELECT DISTINCT(classname) FROM object_text', []);
 	}
 
