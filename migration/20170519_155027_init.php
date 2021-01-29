@@ -28,7 +28,7 @@ class Migration_20170519_155027_Init extends \Skeleton\Database\Migration {
 			  `name_ogone` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
 			  PRIMARY KEY (`id`),
 			  FULLTEXT KEY `name_short` (`name_short`)
-			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 		", []);
 
 
