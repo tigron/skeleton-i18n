@@ -115,7 +115,7 @@ class Translation {
 	private function reload_po_file() {
 		$po_files = [];
 		$po_files[] = Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po';
-		$packages = \Skeleton\Core\Package::get_all();
+		$packages = \Skeleton\Core\Skeleton::get_all();
 
 		foreach ($packages as $package) {
 			if (file_exists(Config::$po_directory . '/' . $this->language->name_short . '/package/' . $package->name . '.po')) {
