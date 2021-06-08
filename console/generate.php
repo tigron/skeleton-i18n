@@ -62,7 +62,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$output->writeln($log);
 		}
 
-		$packages = \Skeleton\Core\Package::get_all();
+		$packages = \Skeleton\Core\Skeleton::get_all();
 
 		foreach ($packages as $package) {
 			$log = $this->translate_skeleton_package($package);

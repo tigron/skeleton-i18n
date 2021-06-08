@@ -33,7 +33,7 @@ class I18n_Package extends \Skeleton\Console\Command {
 	 * @param OutputInterface $output
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output) {
-		$packages = \Skeleton\Core\Package::get_all();
+		$packages = \Skeleton\Core\Skeleton::get_all();
 		$name = $input->getArgument('name');
 		$to_translate = null;
 		foreach ($packages as $package) {
@@ -52,7 +52,7 @@ class I18n_Package extends \Skeleton\Console\Command {
 	 * @param string $application Name of the application
 	 * @param string $directory Application path
 	 */
-	private function translate_skeleton_package(\Skeleton\Core\Package $package) {
+	private function translate_skeleton_package(\Skeleton\Core\Skeleton $package) {
 		$log = '';
 		$log .= 'translating ' . $package->name . ' (' . $package->template_path . ')' . "\n";
 
