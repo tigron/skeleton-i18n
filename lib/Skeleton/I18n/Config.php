@@ -16,17 +16,37 @@ class Config {
 	 * This folder will be used to store the cached translations
 	 *
 	 * @access public
+	 * @deprecated use $cache_path instead
 	 * @var string $cache_directory
 	 */
-	public static $cache_directory = '/tmp';
+	public static $cache_directory = null;
+
+	/**
+	 * Cache path
+	 *
+	 * This folder will be used to store the cached translations
+	 *
+	 * @access public
+	 * @var string $cache_path
+	 */
+	public static $cache_path = '/tmp';
 
 	/**
 	 * Directory where we will store the generated .po files
 	 *
 	 * @access public
+	 * @deprecated use $po_path instead
 	 * @var string $po_directory
 	 */
-	public static $po_directory = '/tmp';
+	public static $po_directory = null;
+
+	/**
+	 * Path where we will store the generated .po files
+	 *
+	 * @access public
+	 * @var string $po_path
+	 */
+	public static $po_path = '/tmp';
 
 	/**
 	 * Base language, the language in which the templates are written

@@ -57,8 +57,8 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		}
 
 		// Translate all the applications
-		foreach ($paths as $application => $directory) {
-			$log = $this->translate_application($application, $directory);
+		foreach ($paths as $application => $path) {
+			$log = $this->translate_application($application, $path);
 			$output->writeln($log);
 		}
 
@@ -76,16 +76,16 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 * Translate a skeleton package
 	 *
 	 * @param string $application Name of the application
-	 * @param string $directory Application path
 	 */
 	private function translate_skeleton_package(\Skeleton\Core\Skeleton $package) {
 		$log = '';
 		$log .= 'translating ' . $package->name . ' (' . $package->template_path . ')' . "\n";
 
-		// Fetch the templates in this directory
+		// Fetch the templates in this path
 		if (!file_exists($package->template_path)) {
 			return;
 		}
+
 		$templates = $this->get_templates($package->template_path);
 		$strings = [];
 
@@ -98,6 +98,10 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		$language_interface = \Skeleton\I18n\Config::$language_interface;
 		if (!class_exists($language_interface)) {
 			throw new \Exception('The language interface does not exists: ' . $language_interface);
+		}
+
+		if (\Skeleton\I18n\Config::$po_directory !== null) {
+			\Skeleton\I18n\Config::$po_path = \Skeleton\I18n\Config::$po_directory;
 		}
 
 		$languages = $language_interface::get_all();
@@ -118,8 +122,8 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 			// If there is a local translation file, load it
 			$local_translated = [];
-			if (file_exists(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/package/' . $package->name . '.po')) {
-				$local_translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/package/' . $package->name . '.po');
+			if (file_exists(\Skeleton\I18n\Config::$po_path . '/' . $language->name_short . '/package/' . $package->name . '.po')) {
+				$local_translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_path . '/' . $language->name_short . '/package/' . $package->name . '.po');
 			}
 
 			// Create a new array with the merged translations
@@ -147,7 +151,12 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			}
 
 			// And save!
-			\Skeleton\I18n\Util::save(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/package/' . $package->name . '.po', $package->name, $language, $new_po);
+			\Skeleton\I18n\Util::save(
+				\Skeleton\I18n\Config::$po_path . '/' . $language->name_short . '/package/' . $package->name . '.po',
+				$package->name,
+				$language,
+				$new_po
+			);
 		}
 
 		$log .= "\n";
@@ -178,8 +187,12 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		if (!class_exists($language_interface)) {
 			throw new \Exception('The language interface does not exists: ' . $language_interface);
 		}
-		$languages = $language_interface::get_all();
 
+		if (\Skeleton\I18n\Config::$po_directory !== null) {
+			\Skeleton\I18n\Config::$po_path = \Skeleton\I18n\Config::$po_directory;
+		}
+
+		$languages = $language_interface::get_all();
 		foreach ($languages as $language) {
 			// Don't create a .po file if it is our base_language
 			if ($language->name_short == \Skeleton\I18n\Config::$base_language) {
@@ -189,9 +202,9 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$log .=  ' ' . $language->name_short;
 
 			// If we already have a (partially) translated file, merge
-			if (file_exists(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/' . $application . '.po')) {
-				$translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/' . $application . '.po');
-				$old_translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '.po');
+			if (file_exists(\Skeleton\I18n\Config::$po_path . '/' . $language->name_short . '/' . $application . '.po')) {
+				$translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_path . '/' . $language->name_short . '/' . $application . '.po');
+				$old_translated = \Skeleton\I18n\Util::load(\Skeleton\I18n\Config::$po_path . '/' . $language->name_short . '.po');
 				$translated = array_merge($translated, $old_translated);
 			} else {
 				$translated = [];
@@ -220,7 +233,12 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			}
 
 			// And save!
-			\Skeleton\I18n\Util::save(\Skeleton\I18n\Config::$po_directory . '/' . $language->name_short . '/' . $application . '.po', $application, $language, $new_po);
+			\Skeleton\I18n\Util::save(
+				\Skeleton\I18n\Config::$po_path . '/' . $language->name_short . '/' . $application . '.po',
+				$application,
+				$language,
+				$new_po
+			);
 		}
 
 		$log .= "\n";
@@ -250,13 +268,23 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		return $strings;
 	}
 
+	/**
+	 * Extract Twig strings.
+	 */
 	private function get_twig_strings($file, $directory) {
 		if (!isset($this->twig_extractor[$directory])) {
 			$loader = new \Twig\Loader\FilesystemLoader($directory);
 
+			$cache_path = null;
+			if (empty(\Skeleton\Template\Twig\Config::$cache_directory) === false) {
+				$cache_path = \Skeleton\Template\Twig\Config::$cache_directory;
+			} else {
+				$cache_path = \Skeleton\Template\Twig\Config::$cache_path;
+			}
+
 			// force auto-reload to always have the latest version of the template
 			$twig = new \Twig\Environment($loader, [
-				'cache' => \Skeleton\Template\Twig\Config::$cache_directory,
+				'cache' => $cache_path,
 				'auto_reload' => true
 			]);
 
@@ -277,6 +305,9 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		return $this->twig_extractor[$directory]->extract($file);
 	}
 
+	/**
+	 * Extract Smarty strings.
+	 */
 	private function get_smarty_strings($file, $directory) {
 		$content = file_get_contents($directory . '/' . $file);
 		preg_match_all("/\{t\}(.*?)\{\/t\}/", $content, $matches);

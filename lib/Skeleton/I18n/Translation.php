@@ -97,14 +97,23 @@ class Translation {
 	 * @param string $string
 	 */
 	private function add_to_po($string) {
+		if (\Skeleton\I18n\Config::$po_directory !== null) {
+			\Skeleton\I18n\Config::$po_path = \Skeleton\I18n\Config::$po_directory;
+		}
+
 		$this->strings[$string] = '';
 
-		$current_strings = Util::load(Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po');
+		$current_strings = Util::load(Config::$po_path . '/' . $this->language->name_short . '/' . $this->application_name . '.po');
 		$untranslated = [$string => ''];
 		$strings = array_merge($untranslated, $current_strings);
 		ksort($strings);
 
-		Util::save(Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po', $this->application_name, $this->language, $strings);
+		Util::save(
+			Config::$po_path . '/' . $this->language->name_short . '/' . $this->application_name . '.po',
+			$this->application_name,
+			$this->language,
+			$strings
+		);
 	}
 
 	/**
@@ -113,19 +122,27 @@ class Translation {
 	 * @access public
 	 */
 	private function reload_po_file() {
+		if (\Skeleton\I18n\Config::$po_directory !== null) {
+			\Skeleton\I18n\Config::$po_path = \Skeleton\I18n\Config::$po_directory;
+		}
+
+		if (\Skeleton\I18n\Config::$cache_directory !== null) {
+			\Skeleton\I18n\Config::$cache_path = \Skeleton\I18n\Config::$cache_directory;
+		}
+
 		$po_files = [];
-		$po_files[] = Config::$po_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.po';
+		$po_files[] = Config::$po_path . '/' . $this->language->name_short . '/' . $this->application_name . '.po';
 		$packages = \Skeleton\Core\Skeleton::get_all();
 
 		foreach ($packages as $package) {
-			if (file_exists(Config::$po_directory . '/' . $this->language->name_short . '/package/' . $package->name . '.po')) {
-				$po_files[] = Config::$po_directory . '/' . $this->language->name_short . '/package/' . $package->name . '.po';
+			if (file_exists(Config::$po_path . '/' . $this->language->name_short . '/package/' . $package->name . '.po')) {
+				$po_files[] = Config::$po_path . '/' . $this->language->name_short . '/package/' . $package->name . '.po';
 			}
 		}
 
 		$array_modified = 0;
-		if (file_exists(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php')) {
-			$array_modified = filemtime(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php');
+		if (file_exists(Config::$cache_path . '/' . $this->language->name_short . '/' . $this->application_name . '.php')) {
+			$array_modified = filemtime(Config::$cache_path . '/' . $this->language->name_short . '/' . $this->application_name . '.php');
 		}
 
 		$po_file_modified = null;
@@ -159,11 +176,14 @@ class Translation {
 			}
 		}
 
-		if (!file_exists(Config::$cache_directory . '/' . $this->language->name_short)) {
-			mkdir(Config::$cache_directory . '/' . $this->language->name_short, 0755, true);
+		if (!file_exists(Config::$cache_path . '/' . $this->language->name_short)) {
+			mkdir(Config::$cache_path . '/' . $this->language->name_short, 0755, true);
 		}
 
-		file_put_contents(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php', '<?php $strings = ' . var_export($po_strings, true) . ';');
+		file_put_contents(
+			Config::$cache_path . '/' . $this->language->name_short . '/' . $this->application_name . '.php',
+			'<?php $strings = ' . var_export($po_strings, true) . ';'
+		);
 	}
 
 	/**
@@ -172,8 +192,12 @@ class Translation {
 	 * @access private
 	 */
 	private function load_strings() {
-		if (file_exists(Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php')) {
-			require Config::$cache_directory . '/' . $this->language->name_short . '/' . $this->application_name . '.php';
+		if (\Skeleton\I18n\Config::$cache_directory !== null) {
+			\Skeleton\I18n\Config::$cache_path = \Skeleton\I18n\Config::$cache_directory;
+		}
+
+		if (file_exists(Config::$cache_path . '/' . $this->language->name_short . '/' . $this->application_name . '.php')) {
+			require Config::$cache_path . '/' . $this->language->name_short . '/' . $this->application_name . '.php';
 			$this->strings = $strings;
 		}
 	}

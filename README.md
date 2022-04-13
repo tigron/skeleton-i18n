@@ -19,14 +19,18 @@ Run the migrations to update the database schema:
 Configure the package:
 
 	/**
-	 * The the directory to store the po files
+	 * The path to store the po files
+	 *
+	 * \Skeleton\I18n\Config::$po_directory is deprecated
 	 */
-	\Skeleton\I18n\Config::$po_directory = '/my_app/po';
+	\Skeleton\I18n\Config::$po_path = '/my_app/po';
 
     /**
 	 * Define a temporary folder to cache all translations
+	 *
+	 * \Skeleton\I18n\Config::$cache_directory is deprecated
 	 */
-	\Skeleton\I18n\Config::$cache_directory = '/my_app/tmp/languages';
+	\Skeleton\I18n\Config::$cache_path = '/my_app/tmp/languages';
 
 	/**
 	 * Optional:
