@@ -293,6 +293,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$twig->addExtension(new \Skeleton\I18n\Template\Twig\Extension\Tigron());
 			$twig->addExtension(new \Twig\Extra\Markdown\MarkdownExtension());
 			$twig->addExtension(new \Twig\Extra\String\StringExtension());
+			$twig->addExtension(new \Twig\Extra\Cache\CacheExtension());
 
 			$extensions = \Skeleton\Template\Twig\Config::get_extensions();
 			foreach ($extensions as $extension) {
