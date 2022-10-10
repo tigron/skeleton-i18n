@@ -82,7 +82,7 @@ class Text {
 	 * @param string $label
 	 * @param Language $language
 	 */
-	public static function get_by_object_label_language($object, $label, \Skeleton\I18n\LanguageInterface $language, $auto_create = true) {
+	public static function get_by_object_label_language($object, $label, \Skeleton\I18n\LanguageInterface $language) {
 		$class_parents = class_parents($object);
 		if ($class_parents === false || count($class_parents) == 0) {
 			$class = get_class($object);
@@ -101,8 +101,8 @@ class Text {
 		$data = $db->get_row('SELECT * FROM object_text WHERE classname=? AND object_id=? AND label=? AND language_id=?', [ $class, $object->id, $label, $language->id ]);
 
 		if ($data === null) {
-			if (!$auto_create) {
-				throw new \Exception('Object text does not exists');
+			if (!\Skeleton\I18n\Config::$auto_create) {
+				return null;
 			} else {
 				$requested = new self();
 				$requested->object = $object;

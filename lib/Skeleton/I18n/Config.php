@@ -91,4 +91,12 @@ class Config {
 	 * @var bool $auto_fill_po
 	 */
 	public static $auto_fill_po = false;
+
+	/**
+	 * Should object text be auto created when it does not exist
+	 *
+	 * @access public
+	 * @var bool $auto_create
+	 */
+	public static $auto_create = true;
 }
