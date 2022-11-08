@@ -42,6 +42,14 @@ class Translator {
 	private $languages = [];
 
 	/**
+	 * Translators
+	 *
+	 * @access private
+	 * @var array $translators
+	 */
+	private static $translators = [];
+
+	/**
 	 * Constructor
 	 *
 	 * @acess public
@@ -50,6 +58,18 @@ class Translator {
 	public function __construct($name) {
 		$this->name = $name;
 	}
+
+	/**
+	 * Save
+	 *
+	 * @access public
+	 */
+	public function save() {
+		if (empty($this->name)) {
+			throw new \Exception('Cannot save translator, no name set');
+		}
+		self::$translators[$this->name] = $this;
+	}	
 
 	/**
 	 * Set translator_storage
@@ -103,6 +123,31 @@ class Translator {
 		$translator_storage->set_language($language);
 		$translator_storage->set_name($this->name);
 		$translation->translator_storage = $translator_storage;
+		$translation->language = $language;
 		return $translation;
 	}
+
+	/**
+	 * Get by name
+	 *
+	 * @access public
+	 * @param string $name
+	 * @return \Skeleton\I18n\Translator $translator
+	 */
+	public static function get_by_name($name) {
+		if (!isset(self::$translators[$name])) {
+			throw new \Exception('No translator found for name "' . $name . '"');
+		}
+		return self::$translators[$name];
+	}
+
+	/**
+	 * Get by name
+	 *
+	 * @access public
+	 * @return \Skeleton\I18n\Translator[] $translators
+	 */
+	public static function get_all() {
+		return self::$translators;
+	}			
 }

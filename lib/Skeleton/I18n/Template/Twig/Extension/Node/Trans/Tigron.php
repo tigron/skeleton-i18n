@@ -41,7 +41,7 @@ class Tigron extends \Twig\Node\Node
             $vars = array_merge($vars, $vars1);
         }*/
 
-        $function = '\Skeleton\I18n\Translation::translate';
+        $function = '$context[\'env\'][\'translation\']->translate';
 
         if ($vars) {
             $compiler
@@ -59,7 +59,7 @@ class Tigron extends \Twig\Node\Node
                 ;
             }*/
 
-            $compiler->raw(', $context[\'env\'][\'translation\']), array(');
+            $compiler->raw(')');
 
             foreach ($vars as $var) {
                 if ('count' === $var->getAttribute('name')) {
@@ -96,7 +96,7 @@ class Tigron extends \Twig\Node\Node
                 ;
             }*/
 
-            $compiler->raw(", " . '$context[\'env\'][\'translation\']' . ");\n");
+            $compiler->raw(");\n");
         }
     }
 

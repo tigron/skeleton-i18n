@@ -11,7 +11,21 @@ namespace Skeleton\I18n;
 
 class Translation {
 
+	/**
+	 * The translator_storage
+	 *
+	 * @access public
+	 * @var \Skeleton\I18n\Translator\Storage $translator_storage
+	 */
 	public $translator_storage = null;
+
+	/**
+	 * Language
+	 *
+	 * @access private
+	 * @var \Skeleton\I18n\LanguageInterface $language
+	 */
+	public $language = null;
 
 	/**
 	 * Translate
@@ -36,4 +50,18 @@ class Translation {
 		}
 	}
 
+	/**
+	 * Get
+	 * This method is here for backwards compatibility
+	 *
+	 * @access public
+	 * @param \Skeleton\I18n\LanguageInterface $language
+	 * @param string $name
+	 * @return Translation $translation
+	 */
+	public static function get(\Skeleton\I18n\LanguageInterface $language, $name) {
+		$translator = Translator::get_by_name($name);
+		$translation = $translator->get_translation($language);
+		return $translation;
+	}
 }

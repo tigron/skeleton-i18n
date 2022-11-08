@@ -16,31 +16,38 @@ Run the migrations to update the database schema:
 
 ## Howto
 
-Configure the package:
+Translate a Skeleton App:
+
 
 	/**
-	 * The path to store the po files
-	 *
-	 * \Skeleton\I18n\Config::$po_directory is deprecated
+	 * Create a translator object
 	 */
-	\Skeleton\I18n\Config::$po_path = '/my_app/po';
-
-    /**
-	 * Define a temporary folder to cache all translations
-	 *
-	 * \Skeleton\I18n\Config::$cache_directory is deprecated
-	 */
-	\Skeleton\I18n\Config::$cache_path = '/my_app/tmp/languages';
+	$translator = new \Skeleton\I18n\Translator($application->name);
 
 	/**
-	 * Optional:
-	 * skeleton-i18n keeps translations for templates per application.
-	 * For every skeleton application in your project a different po file is
-	 * created that contains all strings to be translated for the given
-	 * application.
-	 * If for some reason, you want to include more templates, this can
-	 * be done via the following configuration.
-	\Skeleton\I18n\Config::$additional_template_paths['pdf'] = '/my_app/pdf/templates';
+	 * Attach a storage
+	 */
+	$translator_storage_po = new \Skeleton\I18n\Translator\Storage\Po();
+	$translator_storage_po->set_storage_path($root_path . '/po/');	
+	$translator->set_translator_storage($translator_storage_po);
+
+	/**
+	 * Use an extractor to extract translations from templates
+	 */
+	$translator_extractor_twig = new \Skeleton\I18n\Translator\Extractor\Twig();
+	$translator_extractor_twig->set_template_path($application->template_path);			
+	$translator->set_translator_extractor($translator_extractor_twig);
+
+	/**
+	 * Save the translator
+	 */
+	$translator->save();
+
+	/**
+	 * To translate, get the translation object and ask for a translation
+	 */
+	$translation = $translator->get_translation( Language::get_by_name_short('nl') );
+	echo $translation->translate('This is a test');
 
 	/**
 	 * Optional:
@@ -62,9 +69,4 @@ Via a twig template rendered by skeleton-template-twig:
 
 	{% trans "To be translated" %}
 
-Directly via PHP:
 
-	$language = Language::get_by_name_short('en');
-	$application_name = 'admin';
-	$translation = \Skeleton\I18n\Translation::get($language, $application_name);
-	\Skeleton\I18n\Translation::translate('To be translated', $translation);
