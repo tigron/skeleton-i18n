@@ -5,13 +5,6 @@ namespace Skeleton\I18n\Translator\Storage;
 class Po extends \Skeleton\I18n\Translator\Storage {
 
 	/**
-	 * storage_path
-	 *
-	 * @access privavate
-	 */
-	private $storage_path = null;
-
-	/**
 	 * strings
 	 *
 	 * @access private
@@ -23,10 +16,14 @@ class Po extends \Skeleton\I18n\Translator\Storage {
 	 * Set storage path
 	 *
 	 * @access public
-	 * @param string $storage_path
+	 * @return string $storage_path
 	 */
-	public function set_storage_path($storage_path) {
-		$this->storage_path = $storage_path;
+	private function get_storage_path() {
+		$configuration = $this->get_configuration();
+		if (!isset($configuration['storage_path'])) {
+			throw new \Exception('Storage path not defined for Storage\\Po');
+		}
+		return $configuration['storage_path'];
 	}
 
 	/**
@@ -69,18 +66,27 @@ class Po extends \Skeleton\I18n\Translator\Storage {
 		return $this->strings[$string];	
 	}
 
+	/**
+	 * Load a po file
+	 *
+	 * @access private
+	 */
 	private function load_po() {
-		$translated = \Skeleton\I18n\Util::load($this->storage_path . '/' . $this->language->name_short . '/' . $this->name . '.po');	
+		$translated = \Skeleton\I18n\Util::load($this->get_storage_path() . '/' . $this->language->name_short . '/' . $this->name . '.po');	
 		$this->strings = $translated;
 	}
+
+	/**
+	 * Write a po
+	 *
+	 * @access private
+	 */	
 	private function write_po() {
 		\Skeleton\I18n\Util::save(
-			$this->storage_path . '/' . $this->language->name_short . '/' . $this->name . '.po',
+			$this->get_storage_path() . '/' . $this->language->name_short . '/' . $this->name . '.po',
 			$this->name,
 			$this->language,
 			$this->strings
 		);	
 	}
-		
-
 }

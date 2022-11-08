@@ -7,7 +7,7 @@ abstract class Storage {
 	/**
 	 * storage_path
 	 *
-	 * @access privavate
+	 * @access private
 	 */
 	protected $name = null;
 
@@ -18,6 +18,22 @@ abstract class Storage {
 	 * @var \Skeleton\I18n\LanguageInterface $language
 	 */
 	protected $language = null;
+
+	/**
+	 * Configuration
+	 *
+	 * @access protected
+	 * @var array $configuration
+	 */
+	protected $configuration = [];
+
+	/**
+	 * Default configuration
+	 *
+	 * @access protected
+	 * @var array $default_configuration
+	 */
+	protected static $default_configuration = null;		
 
 	/**
 	 * Constructor
@@ -57,6 +73,26 @@ abstract class Storage {
 	}
 
 	/**
+	 * Set configuration
+	 *
+	 * @access public
+	 * @param array $configuration
+	 */
+	public function set_configuration($configuration) {
+		$this->configuration = $configuration;
+	}
+
+	/**
+	 * Get configuration
+	 *
+	 * @access public
+	 * @return array $configuration
+	 */
+	public function get_configuration() {
+		return array_merge(self::$default_configuration, $this->configuration);
+	}		
+
+	/**
 	 * Add a translation
 	 *
 	 * @access public
@@ -73,5 +109,15 @@ abstract class Storage {
 	 * @return string $translated_string
 	 */
 	abstract public function get_translation($string);
+
+	/**
+	 * Set default configuration
+	 *
+	 * @access public
+	 * @param array $default_configuration
+	 */
+	public static function set_default_configuration($default_configuration) {
+		self::$default_configuration = $default_configuration;
+	}	
 
 }

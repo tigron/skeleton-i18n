@@ -27,4 +27,12 @@ interface LanguageInterface {
 	 */
 	public static function detect();
 
+	/**
+	 * Get all languages
+	 *
+	 * @access public
+	 * @return LanguageInterface[] $languages
+	 */
+	public static function get_all();
+
 }

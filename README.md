@@ -28,7 +28,9 @@ Translate a Skeleton App:
 	 * Attach a storage
 	 */
 	$translator_storage_po = new \Skeleton\I18n\Translator\Storage\Po();
-	$translator_storage_po->set_storage_path($root_path . '/po/');	
+	$translator_storage_po->set_configuration([
+		'storage_path' => $root_path . '/po/'
+	]);
 	$translator->set_translator_storage($translator_storage_po);
 
 	/**
@@ -49,19 +51,19 @@ Translate a Skeleton App:
 	$translation = $translator->get_translation( Language::get_by_name_short('nl') );
 	echo $translation->translate('This is a test');
 
+
+Translator\Storage objects can have a default configuration. This configuration
+will be used for any newly created Translator\Storage object.	
+
+	\Skeleton\I18n\Translator\Storage\Po::set_default_configuration([
+		'storage_path' => $root_path . '/po/'	
+	]);
+
 	/**
 	 * Optional:
 	 * Set another Language interface
 	 */
 	\Skeleton\I18n\Config::$language_interface = '\Language';
-
-    /**
-	 * Optional:
-	 * Enable auto fill po file when requesting translation
-     * Default to false
-	 */
-	\Skeleton\I18n\Config::$auto_fill_po = true;
-
 
 Use it:
 
