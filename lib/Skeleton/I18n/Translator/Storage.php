@@ -33,7 +33,7 @@ abstract class Storage {
 	 * @access protected
 	 * @var array $default_configuration
 	 */
-	protected static $default_configuration = null;
+	protected static $default_configuration = [];
 
 	/**
 	 * Constructor
@@ -111,6 +111,20 @@ abstract class Storage {
 	abstract public function get_translation($string);
 
 	/**
+	 * Add multiple translations
+	 * Key = string
+	 * Value = translated string
+	 *
+	 * @access public
+	 * @param array $translations
+	 */
+	public function add_translations($translations) {
+		foreach ($translation as $key => $translation) {
+			$this->add_translation($key, $translation);
+		}
+	}
+
+	/**
 	 * Set default configuration
 	 *
 	 * @access public
@@ -126,7 +140,7 @@ abstract class Storage {
 	 * @access public
 	 * @return array $default_configuration
 	 */
-	public static function get_default_configuration($default_configuration) {
-		self::$default_configuration = $default_configuration;
+	public static function get_default_configuration() {
+		return self::$default_configuration;
 	}
 }

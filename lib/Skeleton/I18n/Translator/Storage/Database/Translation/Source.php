@@ -26,6 +26,16 @@ class Source {
 	];
 
 	/**
+	 * get translation targets
+	 *
+	 * @access public
+	 * @return Target[]
+	 */
+	public function get_translation_targets() {
+		return Target::get_by_source($this);
+	}
+
+	/**
 	 * get by name string
 	 *
 	 * @access public

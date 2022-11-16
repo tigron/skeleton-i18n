@@ -26,6 +26,23 @@ class Target {
 	];
 
 	/**
+	 * get by source
+	 *
+	 * @access public
+	 * @param Source $source
+	 * @return Translation
+	 */
+	public static function get_by_source(Source $source) {
+		$db = Database::get();
+		$results = [];
+		$ids = $db->get_column("SELECT id FROM translation_target WHERE translation_source_id = ?", [ $source->id ]);
+		foreach ($ids as $id) {
+			$results[] = self::get_by_id($id);
+		}
+		return $results;
+	}
+
+	/**
 	 * get by source language
 	 *
 	 * @access public

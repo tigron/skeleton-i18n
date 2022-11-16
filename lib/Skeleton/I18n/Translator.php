@@ -69,7 +69,7 @@ class Translator {
 			throw new \Exception('Cannot save translator, no name set');
 		}
 		self::$translators[$this->name] = $this;
-	}	
+	}
 
 	/**
 	 * Set translator_storage
@@ -97,20 +97,23 @@ class Translator {
 	 * @access public
 	 */
 	public function generate_translations() {
-		echo $this->name . ": ";
+		$log = '';
 		$strings = $this->translator_extractor->get_strings();
-		$languages = \Language::get_all();
+		$translations = [];
+		foreach ($strings as $string) {
+			$translations[$string] = null;
+		}
+		$language_interface = Config::$language_interface;
+		$languages = $language_interface::get_all();
 		foreach ($languages as $language) {
-			echo $language->name_short . ' ';
+			$log .= $language->name_short . ' ';
 			$translator_storage = $this->translator_storage;
 			$translator_storage->set_language($language);
 			$translator_storage->set_name($this->name);
-			foreach ($strings as $string) {
-				$translator_storage->add_translation($string, null);
-			}
+			$translator_storage->add_translations($translations);
 		}
-		echo "\n";
-	}	
+		return $log;
+	}
 
 	/**
 	 * Get translation
@@ -125,6 +128,16 @@ class Translator {
 		$translation->translator_storage = $translator_storage;
 		$translation->language = $language;
 		return $translation;
+	}
+
+	/**
+	 * Get the name
+	 *
+	 * @access public
+	 * @return string $name
+	 */
+	public function get_name() {
+		return $this->name;
 	}
 
 	/**
@@ -149,5 +162,5 @@ class Translator {
 	 */
 	public static function get_all() {
 		return self::$translators;
-	}			
+	}
 }
