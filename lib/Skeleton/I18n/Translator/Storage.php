@@ -33,7 +33,7 @@ abstract class Storage {
 	 * @access protected
 	 * @var array $default_configuration
 	 */
-	protected static $default_configuration = null;		
+	protected static $default_configuration = null;
 
 	/**
 	 * Constructor
@@ -90,7 +90,7 @@ abstract class Storage {
 	 */
 	public function get_configuration() {
 		return array_merge(self::$default_configuration, $this->configuration);
-	}		
+	}
 
 	/**
 	 * Add a translation
@@ -118,6 +118,15 @@ abstract class Storage {
 	 */
 	public static function set_default_configuration($default_configuration) {
 		self::$default_configuration = $default_configuration;
-	}	
+	}
 
+	/**
+	 * Get default configuration
+	 *
+	 * @access public
+	 * @return array $default_configuration
+	 */
+	public static function get_default_configuration($default_configuration) {
+		self::$default_configuration = $default_configuration;
+	}
 }
