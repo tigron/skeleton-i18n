@@ -11,17 +11,6 @@ namespace Skeleton\I18n;
 class Config {
 
 	/**
-	 * Cache directory
-	 *
-	 * This folder will be used to store the cached translations
-	 *
-	 * @access public
-	 * @deprecated use $cache_path instead
-	 * @var string $cache_directory
-	 */
-	public static $cache_directory = null;
-
-	/**
 	 * Cache path
 	 *
 	 * This folder will be used to store the cached translations
@@ -55,7 +44,7 @@ class Config {
 	 * @access public
 	 * @var bool $debug
 	 */
-	public static $debug = false;
+	public static $debug = true;
 
 	/**
 	 * Should the po be prefilled when requesting a new string

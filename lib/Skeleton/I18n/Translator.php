@@ -82,6 +82,16 @@ class Translator {
 	}
 
 	/**
+	 * Get translator_storage
+	 *
+	 * @access public
+	 * @return Translator_Storage $translator_storage
+	 */
+	public function get_translator_storage() {
+		return $this->translator_storage;
+	}
+
+	/**
 	 * Set translator_extractor
 	 *
 	 * @access public
@@ -92,27 +102,13 @@ class Translator {
 	}
 
 	/**
-	 * Generate translations
+	 * Get translator_extractor
 	 *
 	 * @access public
+	 * @return Translator_Extractor $translator_extractor
 	 */
-	public function generate_translations() {
-		$log = '';
-		$strings = $this->translator_extractor->get_strings();
-		$translations = [];
-		foreach ($strings as $string) {
-			$translations[$string] = null;
-		}
-		$language_interface = Config::$language_interface;
-		$languages = $language_interface::get_all();
-		foreach ($languages as $language) {
-			$log .= $language->name_short . ' ';
-			$translator_storage = $this->translator_storage;
-			$translator_storage->set_language($language);
-			$translator_storage->set_name($this->name);
-			$translator_storage->add_translations($translations);
-		}
-		return $log;
+	public function get_translator_extractor() {
+		return $this->translator_extractor;
 	}
 
 	/**
@@ -125,6 +121,7 @@ class Translator {
 		$translator_storage = $this->translator_storage;
 		$translator_storage->set_language($language);
 		$translator_storage->set_name($this->name);
+		$translator_storage->open();
 		$translation->translator_storage = $translator_storage;
 		$translation->language = $language;
 		return $translation;

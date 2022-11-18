@@ -18,7 +18,7 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 	 * @access private
 	 * @var \Twig\Environment $twig_environment
 	 */
-	private $twig_environemt = null;	
+	private $twig_environemt = null;
 
 	/**
 	 * Set the template path
@@ -68,16 +68,9 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 		if (!isset($this->twig_environment)) {
 			$loader = new \Twig\Loader\FilesystemLoader($this->template_path);
 
-			$cache_path = null;
-			if (empty(\Skeleton\Template\Twig\Config::$cache_directory) === false) {
-				$cache_path = \Skeleton\Template\Twig\Config::$cache_directory;
-			} else {
-				$cache_path = \Skeleton\Template\Twig\Config::$cache_path;
-			}
-
 			// force auto-reload to always have the latest version of the template
 			$twig = new \Twig\Environment($loader, [
-				'cache' => $cache_path,
+				'cache' => \Skeleton\Template\Twig\Config::$cache_path,
 				'auto_reload' => true
 			]);
 
@@ -92,10 +85,10 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 			foreach ($extensions as $extension) {
 				$twig->addExtension(new $extension());
 			}
-			$twig->addNodeVisitor($this);			
+			$twig->addNodeVisitor($this);
 			$this->twig_environment = $twig;
 		}
-		return $this->twig_environment;	
+		return $this->twig_environment;
 	}
 
 	/**
@@ -208,6 +201,6 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 	 */
 	public function getPriority() {
 		return 0;
-	}	
+	}
 
 }

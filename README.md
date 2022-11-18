@@ -37,7 +37,7 @@ Translate a Skeleton App:
 	 * Use an extractor to extract translations from templates
 	 */
 	$translator_extractor_twig = new \Skeleton\I18n\Translator\Extractor\Twig();
-	$translator_extractor_twig->set_template_path($application->template_path);			
+	$translator_extractor_twig->set_template_path($application->template_path);
 	$translator->set_translator_extractor($translator_extractor_twig);
 
 	/**
@@ -53,10 +53,10 @@ Translate a Skeleton App:
 
 
 Translator\Storage objects can have a default configuration. This configuration
-will be used for any newly created Translator\Storage object.	
+will be used for any newly created Translator\Storage object.
 
 	\Skeleton\I18n\Translator\Storage\Po::set_default_configuration([
-		'storage_path' => $root_path . '/po/'	
+		'storage_path' => $root_path . '/po/'
 	]);
 
 	/**
@@ -70,5 +70,4 @@ Use it:
 Via a twig template rendered by skeleton-template-twig:
 
 	{% trans "To be translated" %}
-
 
