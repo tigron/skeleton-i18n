@@ -44,7 +44,7 @@ class Config {
 	 * @access public
 	 * @var bool $debug
 	 */
-	public static $debug = true;
+	public static $debug = false;
 
 	/**
 	 * Should the po be prefilled when requesting a new string

@@ -76,7 +76,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		$language_y = $cursor->getCurrentPosition()[1];
 
 		foreach ($languages as $language) {
-			if (!$language->selectable_by_customer) {
+			if (!$language->is_translatable()) {
 				continue;
 			}
 
