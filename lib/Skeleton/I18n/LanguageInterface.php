@@ -19,6 +19,18 @@ interface LanguageInterface {
 	public function is_translatable(): bool;
 
 	/**
+	 * is base
+	 *
+	 * Is this the base language?
+	 * Base language is always available and is used as the base for any
+	 * translation
+	 *
+	 * @access public
+	 * @return bool $translatable
+	 */
+	public function is_base(): bool;
+
+	/**
 	 * Get by name_short
 	 *
 	 * @access public

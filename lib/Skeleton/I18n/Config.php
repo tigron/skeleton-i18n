@@ -21,14 +21,6 @@ class Config {
 	public static $cache_path = '/tmp';
 
 	/**
-	 * Base language, the language in which the templates are written
-	 *
-	 * @access public
-	 * @var string $base_language
-	 */
-	public static $base_language = 'en';
-
-	/**
 	 * Language interface class
 	 *
 	 * This class will provide the Language functionality, by default a class is defined

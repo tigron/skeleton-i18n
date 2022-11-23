@@ -35,8 +35,7 @@ class Translation {
 	 * @return string $translated
 	 */
 	public function translate($string) {
-		$base_language = \Skeleton\I18n\Config::$base_language;
-		if ($this->translator_storage->get_language()->name_short == $base_language) {
+		if ($this->translator_storage->get_language()->is_base()) {
 			return $string;
 		}
 

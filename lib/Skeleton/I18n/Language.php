@@ -37,6 +37,20 @@ class Language implements LanguageInterface {
 	}
 
 	/**
+	 * is translatable
+	 *
+	 * @access public
+	 * @return bool $translatable
+	 */
+	public function is_base(): bool {
+		if ($this->name_short == 'en') {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Get by name_short
 	 *
 	 * @access public
