@@ -107,7 +107,7 @@ class Language implements LanguageInterface {
 	 * @return Language $language
 	 */
 	public static function get_base() {
-		$languges = self::get_all();
+		$languages = self::get_all();
 		foreach ($languages as $language) {
 			if ($language->is_base()) {
 				return true;	
