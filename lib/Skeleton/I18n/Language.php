@@ -110,7 +110,7 @@ class Language implements LanguageInterface {
 		$languages = self::get_all();
 		foreach ($languages as $language) {
 			if ($language->is_base()) {
-				return true;	
+				return $language;
 			}
 		}
 		throw new \Exception('No base language defined');
