@@ -100,4 +100,20 @@ class Language implements LanguageInterface {
 		return self::$language;
 	}
 
+	/**
+	 * Get base
+	 *
+	 * @access public
+	 * @return Language $language
+	 */
+	public static function get_base() {
+		$languges = self::get_all();
+		foreach ($languages as $language) {
+			if ($language->is_base()) {
+				return true;	
+			}
+		}
+		throw new \Exception('No base language defined');
+	}
+
 }
