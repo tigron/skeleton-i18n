@@ -50,13 +50,20 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		return 0;
 	}
 
-	private function translate_translator($translator, InputInterface $input, OutputInterface $output) {
+	/**
+	 * Translate translator
+	 * 
+	 * @param \Skeleton\I18n\Translator $translator
+	 * @param InputInterface $input
+	 * @param OutputInterface $output
+	 * @return void
+	 */
+	private function translate_translator($translator, InputInterface $input, OutputInterface $output): void {
 		ProgressBar::setFormatDefinition('custom', ' [%bar%] %current%/%max% -- %message%');
 		$cursor = new Cursor($output);
 		$output->writeln('Generating translations for ' . $translator->get_name() . ': ');
 
 		$strings = $translator->get_translator_extractor()->get_strings();
-
 
 		$translations = [];
 		foreach ($strings as $string) {
@@ -102,7 +109,8 @@ class I18n_Generate extends \Skeleton\Console\Command {
 				if (!array_key_exists($string, $translations)) {
 					$translator_storage->delete_translation($string);
 				}
-			    $progressBar->advance();
+				
+				$progressBar->advance();
 			}
 
 			$progressBar->finish();
@@ -111,18 +119,27 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$progressBar = new ProgressBar($output, count($translations));
 			$progressBar->setFormat('custom');
 			$progressBar->setMessage('Adding new translations');
+			
+			$contains_new = false;
 			foreach ($translations as $string => $translated) {
-				if (isset($existing_translations[$string])) {
+				if (isset($existing_translations[$string]) === true) {
 					// translation already exists
-				} else {
-					$translator_storage->add_translation($string, '');
+					continue;
 				}
-			    $progressBar->advance();
+				
+				$contains_new = true;
+				$translator_storage->add_translation($string, '');
+				$progressBar->advance();
 			}
-			$translator_storage->close();
+			
+			if ($contains_new === true) {
+				$translator_storage->close();
+			}
+			
 			$progressBar->finish();
 			$progressBar->clear();
 		}
+		
 		$output->writeln('');
 	}
 }
