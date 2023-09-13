@@ -42,8 +42,6 @@ class Translation {
 		try {
 			return $this->translator_storage->get_translation($string);
 		} catch (\Exception $e) {
-			if ($string == 'Sort By') {
-			}
 			if (\Skeleton\I18n\Config::$debug) {
 				$string = '[NT] ' . $string;
 			}
