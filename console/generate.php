@@ -43,7 +43,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		\Skeleton\Core\Application::get_all();
 		$translators = \Skeleton\I18n\Translator::get_all();
 
-		foreach ($translators as $translator) {
+		foreach ($translators as $key => $translator) {
 			$this->translate_translator($translator, $input, $output);
 		}
 
@@ -105,9 +105,11 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$progressBar->setFormat('custom');
 			$progressBar->setMessage('Cleaning unused translations');
 
+			$modified = false;
 			foreach ($existing_translations as $string => $existing_translation) {
 				if (!array_key_exists($string, $translations)) {
 					$translator_storage->delete_translation($string);
+					$modified = true;
 				}
 				
 				$progressBar->advance();
@@ -120,19 +122,18 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$progressBar->setFormat('custom');
 			$progressBar->setMessage('Adding new translations');
 			
-			$contains_new = false;
 			foreach ($translations as $string => $translated) {
 				if (isset($existing_translations[$string]) === true) {
 					// translation already exists
 					continue;
 				}
 				
-				$contains_new = true;
 				$translator_storage->add_translation($string, '');
+				$modified = true;
 				$progressBar->advance();
 			}
 			
-			if ($contains_new === true) {
+			if ($modified === true) {
 				$translator_storage->close();
 			}
 			
