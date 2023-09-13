@@ -41,7 +41,7 @@ abstract class Storage {
 	 * @access private
 	 * @var array $strings
 	 */
-	private $strings = null;
+	protected $strings = null;
 
 	/**
 	 * Constructor
