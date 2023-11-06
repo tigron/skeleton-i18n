@@ -70,7 +70,6 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 
 			// force auto-reload to always have the latest version of the template
 			$twig = new \Twig\Environment($loader, [
-				'cache' => \Skeleton\Template\Twig\Config::$cache_path,
 				'auto_reload' => true
 			]);
 
