@@ -27,6 +27,30 @@ class Language implements LanguageInterface {
 	private static $language = null;
 
 	/**
+	 * is translatable
+	 *
+	 * @access public
+	 * @return bool $translatable
+	 */
+	public function is_translatable(): bool {
+		return true;
+	}
+
+	/**
+	 * is translatable
+	 *
+	 * @access public
+	 * @return bool $translatable
+	 */
+	public function is_base(): bool {
+		if ($this->name_short == 'en') {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Get by name_short
 	 *
 	 * @access public
@@ -53,31 +77,6 @@ class Language implements LanguageInterface {
 	}
 
 	/**
-	 * Detect the language based on the HTTP_ACCEPT_LANGUAGE header
-	 *
-	 * @access public
-	 * @return LanguageInterface $language
-	 */
-	public static function detect() {
-		if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-			throw new \Exception('Language cannot be detected, no HTTP_ACCEPT_LANGUAGE header set');
-		}
-
-		$languages = self::get_all();
-		$available_languages = [];
-		foreach ($languages as $language) {
-			$available_languages[] = $language->name_short;
-		}
-
-		$language = Util::get_best_matching_language($_SERVER['HTTP_ACCEPT_LANGUAGE'], $available_languages);
-		if ($language === false) {
-			throw new \Exception('No matching language found');
-		}
-
-		return self::get_by_name_short($language);
-	}
-
-	/**
 	 * Set the current language
 	 *
 	 * @access public
@@ -99,6 +98,22 @@ class Language implements LanguageInterface {
 		}
 
 		return self::$language;
+	}
+
+	/**
+	 * Get base
+	 *
+	 * @access public
+	 * @return Language $language
+	 */
+	public static function get_base() {
+		$languages = self::get_all();
+		foreach ($languages as $language) {
+			if ($language->is_base()) {
+				return $language;
+			}
+		}
+		throw new \Exception('No base language defined');
 	}
 
 }

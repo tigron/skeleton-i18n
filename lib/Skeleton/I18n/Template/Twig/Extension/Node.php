@@ -39,7 +39,7 @@ class Node extends \Twig\Node\Node {
 			$vars = array_merge($vars, $vars1);
 		}
 
-		$function = null === $this->getNode('plural') ? 'Translation::translate' : 'Translation::translate_plural';
+		$function = null === $this->getNode('plural') ? '$context[\'env\'][\'translation\'])->translate' : '$context[\'env\'][\'translation\'])->translate';
 
 		if ($vars) {
 			$compiler
@@ -57,7 +57,7 @@ class Node extends \Twig\Node\Node {
 				;
 			}
 
-			$compiler->raw(', $context[\'env\'][\'translation\']), array(');
+			$compiler->raw(')');
 
 			foreach ($vars as $var) {
 				if ('count' === $var->getAttribute('name')) {

@@ -1,21 +1,93 @@
 <?php
-/**
- * Twig Extractor
- *
- * @author Gerry Demaret <gerry@tigron.be>
- * @author Christophe Gosiau <christophe@tigron.be>
- * @author David Vandemaele <david@tigron.be>
- */
 
-namespace Skeleton\I18n\Extractor;
+namespace Skeleton\I18n\Translator\Extractor;
 
-class Twig implements \Twig\NodeVisitor\NodeVisitorInterface {
+class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\NodeVisitorInterface {
 
-	protected $extracted;
+	/**
+	 * The twig template path
+	 *
+	 * @access private
+	 * @var string $template_path
+	 */
+	private $template_path = null;
 
-	public function __construct(\Twig\Environment $env) {
-		$this->env = $env;
-		$this->env->addNodeVisitor($this);
+	/**
+	 * Twig environment
+	 *
+	 * @access private
+	 * @var \Twig\Environment $twig_environment
+	 */
+	private $twig_environemt = null;
+
+	/**
+	 * Set the template path
+	 *
+	 * @access public
+	 * @param string $template_path
+	 */
+	public function set_template_path($template_path) {
+		$this->template_path = $template_path;
+	}
+
+	/**
+	 * Get strings
+	 *
+	 * @access public
+	 * @return array $strings
+	 */
+	public function get_strings() {
+		$templates = [];
+		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->template_path), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
+		    if ($file->isFile() === false) {
+		        continue;
+		    }
+
+			if ($file->getExtension() != 'twig') {
+				continue;
+			}
+
+		    $resource = substr($file, strlen($this->template_path));
+		    $templates[] = $resource;
+		}
+
+		$strings = [];
+		foreach ($templates as $template) {
+			$strings = array_merge($strings, $this->extract($template));
+		}
+		return $strings;
+	}
+
+	/**
+	 * get the twig environment
+	 *
+	 * @access protected
+	 * @return \Twig\Environment $twig_environment
+	 */
+	protected function get_twig_environment() {
+		if (!isset($this->twig_environment)) {
+			$loader = new \Twig\Loader\FilesystemLoader($this->template_path);
+
+			// force auto-reload to always have the latest version of the template
+			$twig = new \Twig\Environment($loader, [
+				'auto_reload' => true
+			]);
+
+			$twig->addExtension(new \Twig\Extension\StringLoaderExtension());
+			$twig->addExtension(new \Skeleton\Template\Twig\Extension\Common());
+			$twig->addExtension(new \Skeleton\I18n\Template\Twig\Extension\Tigron());
+			$twig->addExtension(new \Twig\Extra\Markdown\MarkdownExtension());
+			$twig->addExtension(new \Twig\Extra\String\StringExtension());
+			$twig->addExtension(new \Twig\Extra\Cache\CacheExtension());
+
+			$extensions = \Skeleton\Template\Twig\Config::get_extensions();
+			foreach ($extensions as $extension) {
+				$twig->addExtension(new $extension());
+			}
+			$twig->addNodeVisitor($this);
+			$this->twig_environment = $twig;
+		}
+		return $this->twig_environment;
 	}
 
 	/**
@@ -28,18 +100,21 @@ class Twig implements \Twig\NodeVisitor\NodeVisitorInterface {
 
 		try {
 			// Parse template
-			$node = $this->env->parse(
-				$this->env->tokenize(
-					$this->env->getLoader()->getSourceContext($resource),
+			$node = $this->get_twig_environment()->parse(
+				$this->get_twig_environment()->tokenize(
+					$this->get_twig_environment()->getLoader()->getSourceContext($resource),
 					$resource
 				)
 			);
 		} catch (\Twig\Error\SyntaxError $e) {
-			echo 'Twig has thrown syntax error ' . $e->getMessage() . ' [' . $e->getTemplateLine() . ']';
+			echo 'Twig has thrown syntax error ' . $e->getMessage() . ': ' . $e->getSourceContext()->getPath() . ':' . $e->getTemplateLine();
 			exit;
+		} catch (\Exception $e) {
+			var_dump($resource);
+			echo 'Twig has thrown syntax error ' . $e->getMessage() . "\n";
 		}
 
-		return $this->extracted;
+		return array_unique($this->extracted);
 	}
 
 	/**
@@ -49,6 +124,7 @@ class Twig implements \Twig\NodeVisitor\NodeVisitorInterface {
 	 */
 	public function enterNode(\Twig\Node\Node $node, \Twig\Environment $env): \Twig\Node\Node {
 		if ($node instanceof \Skeleton\I18n\Template\Twig\Extension\Node\Trans\Tigron) {
+
 			if ($node->getNodeTag() == 'trans') {
 				$extracted = null;
 
@@ -63,7 +139,6 @@ class Twig implements \Twig\NodeVisitor\NodeVisitorInterface {
 				if ($extracted === null) {
 					throw new \Exception('Template syntax error in ' . $node->getNode('value')->getTemplateName() . ' on line ' . $node->getNode('value')->getTemplateLine());
 				}
-
 				$this->extracted[] = $extracted;
 			}
 		} elseif ($node instanceof \Twig\Node\PrintNode) {
@@ -126,4 +201,5 @@ class Twig implements \Twig\NodeVisitor\NodeVisitorInterface {
 	public function getPriority() {
 		return 0;
 	}
+
 }

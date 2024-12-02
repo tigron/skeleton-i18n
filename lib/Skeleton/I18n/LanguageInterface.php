@@ -11,6 +11,26 @@ namespace Skeleton\I18n;
 interface LanguageInterface {
 
 	/**
+	 * is translatable
+	 *
+	 * @access public
+	 * @return bool $translatable
+	 */
+	public function is_translatable(): bool;
+
+	/**
+	 * is base
+	 *
+	 * Is this the base language?
+	 * Base language is always available and is used as the base for any
+	 * translation
+	 *
+	 * @access public
+	 * @return bool $translatable
+	 */
+	public function is_base(): bool;
+
+	/**
 	 * Get by name_short
 	 *
 	 * @access public
@@ -20,11 +40,11 @@ interface LanguageInterface {
 	public static function get_by_name_short($name);
 
 	/**
-	 * Detect the language based on the HTTP_ACCEPT_LANGUAGE header
+	 * Get all languages
 	 *
 	 * @access public
-	 * @return LanguageInterface $language
+	 * @return LanguageInterface[] $languages
 	 */
-	public static function detect();
+	public static function get_all();
 
 }

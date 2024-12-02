@@ -32,7 +32,7 @@ class Util {
 
 		$defaults = [
 				   'ids' => [],
-				   'translated' => null,
+				   'translated' => "",
 		];
 
 		$item = $defaults;
