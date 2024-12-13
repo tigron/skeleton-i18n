@@ -39,16 +39,16 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 	public function get_strings() {
 		$templates = [];
 		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->template_path), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
-		    if ($file->isFile() === false) {
-		        continue;
-		    }
+			if ($file->isFile() === false) {
+				continue;
+			}
 
 			if ($file->getExtension() != 'twig') {
 				continue;
 			}
 
-		    $resource = substr($file, strlen($this->template_path));
-		    $templates[] = $resource;
+			$resource = substr($file, strlen($this->template_path));
+			$templates[] = $resource;
 		}
 
 		$strings = [];
@@ -159,8 +159,23 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 				$sub_nodes = $row->getIterator();
 				foreach ($sub_nodes as $sub_node) {
 					if ($sub_node instanceof \Twig\Node\Expression\FilterExpression) {
-						if ($sub_node->hasNode('filter') && $sub_node->getNode('filter')->getAttribute('value') == 'trans') {
-							$this->extracted[] = $sub_node->getNode('node')->getAttribute('value');
+						$this->extract_message_from_filter_expression($sub_node);
+						continue;
+					}
+
+					if (($sub_node instanceof \Twig\Node\Expression\Binary\ConcatBinary) === false) {
+						continue;
+					}
+
+					while ($sub_node instanceof \Twig\Node\Expression\Binary\ConcatBinary) {
+						$sub_data = $sub_node->getIterator();
+						$sub_node = null;
+						foreach ($sub_data as $sub_row) {
+							if ($sub_row instanceof \Twig\Node\Expression\FilterExpression) {
+								$this->extract_message_from_filter_expression($sub_row);
+							} elseif ($sub_row instanceof \Twig\Node\Expression\Binary\ConcatBinary) {
+								$sub_node = $sub_row;
+							}
 						}
 					}
 				}
@@ -168,11 +183,7 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 		} elseif ($node instanceof \Twig\Node\Expression\ArrayExpression) {
 			$data = $node->getIterator();
 			foreach ($data as $row) {
-				if ($row instanceof \Twig\Node\Expression\FilterExpression) {
-					if ($row->hasNode('filter') && $row->getNode('filter')->getAttribute('value') == 'trans') {
-						$this->extracted[] = $row->getNode('node')->getAttribute('value');
-					}
-				}
+				$this->extract_message_from_filter_expression($row);
 			}
 		} elseif ($node instanceof \Twig\Node\Expression\FilterExpression) {
 			$data = $node->getIterator();
@@ -202,4 +213,18 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 		return 0;
 	}
 
+	/**
+	 * extract message form Node FilterExpression
+	 */
+	public function extract_message_from_filter_expression($node) {
+		if (($node instanceof \Twig\Node\Expression\FilterExpression) === false
+			|| $node->hasNode('filter') === false
+			|| $node->getNode('filter')->getAttribute('value') !== 'trans'
+			|| $node->getNode('node')->hasAttribute('value') === false
+		) {
+			return;
+		}
+
+		$this->extracted[] = $node->getNode('node')->getAttribute('value');
+	}
 }
