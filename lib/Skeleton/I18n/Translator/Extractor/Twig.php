@@ -160,23 +160,8 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 				foreach ($sub_nodes as $sub_node) {
 					if ($sub_node instanceof \Twig\Node\Expression\FilterExpression) {
 						$this->extract_message_from_filter_expression($sub_node);
-						continue;
-					}
-
-					if (($sub_node instanceof \Twig\Node\Expression\Binary\ConcatBinary) === false) {
-						continue;
-					}
-
-					while ($sub_node instanceof \Twig\Node\Expression\Binary\ConcatBinary) {
-						$sub_data = $sub_node->getIterator();
-						$sub_node = null;
-						foreach ($sub_data as $sub_row) {
-							if ($sub_row instanceof \Twig\Node\Expression\FilterExpression) {
-								$this->extract_message_from_filter_expression($sub_row);
-							} elseif ($sub_row instanceof \Twig\Node\Expression\Binary\ConcatBinary) {
-								$sub_node = $sub_row;
-							}
-						}
+					} elseif ($sub_node instanceof \Twig\Node\Expression\Binary\ConcatBinary) {
+						$this->extract_message_from_concat_binary($sub_node);
 					}
 				}
 			}
@@ -226,5 +211,26 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 		}
 
 		$this->extracted[] = $node->getNode('node')->getAttribute('value');
+	}
+
+	/**
+	 * extract message form Node Expression ConcatBinary
+	 */
+	public function extract_message_from_concat_binary($node) {
+		if (($node instanceof \Twig\Node\Expression\Binary\ConcatBinary) === false) {
+			return;
+		}
+
+		while ($node instanceof \Twig\Node\Expression\Binary\ConcatBinary) {
+			$data = $node->getIterator();
+			$node = null;
+			foreach ($data as $row) {
+				if ($row instanceof \Twig\Node\Expression\FilterExpression) {
+					$this->extract_message_from_filter_expression($row);
+				} elseif ($row instanceof \Twig\Node\Expression\Binary\ConcatBinary) {
+					$node = $row;
+				}
+			}
+		}
 	}
 }
