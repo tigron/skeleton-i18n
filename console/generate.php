@@ -108,6 +108,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$modified = false;
 			foreach ($existing_translations as $string => $existing_translation) {
 				if (!array_key_exists($string, $translations)) {
+					// @TODO: should we keep removed ones, with fuzzy.
 					$translator_storage->delete_translation($string);
 					$modified = true;
 				}

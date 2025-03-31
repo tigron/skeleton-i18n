@@ -112,7 +112,6 @@ abstract class Storage {
 		}
 
 		$translations = $this->load_cache_translations();
-
 		if ($translations !== null) {
 			// set the cached translations
 			$this->strings[$this->language->name_short] = $translations;
@@ -120,7 +119,6 @@ abstract class Storage {
 		}
 
 		$translations = $this->load_translations();
-
 		if ($translations !== null) {
 			$this->strings[$this->language->name_short] = $translations;
 			$this->write_cache_translations();
@@ -197,7 +195,8 @@ abstract class Storage {
 	 * @param string $translated_string
 	 */
 	public function add_translation($string, $translated_string) {
-		$this->strings[$this->language->name_short][$string] = $translated_string;
+		$this->strings[$this->language->name_short][$string]['translated'] = $translated_string;
+		$this->strings[$this->language->name_short][$string]['fuzzy'] = false;
 		$this->invalidate_cache();
 	}
 

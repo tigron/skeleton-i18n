@@ -40,23 +40,26 @@ class Util {
 
 		foreach ($lines as $line) {
 		    $line = trim($line);
+			$fuzzy = false;
+			if (in_array('fuzzy', $flags) === true) {
+				$fuzzy = true;
+			}
 		    if ($line === '') {
 		        // Whitespace indicated current item is done
-		        if (!in_array('fuzzy', $flags)) {
-		            self::add_message($strings, $item);
-		        }
+		        self::add_message($strings, $item, $fuzzy);
 		        $item = $defaults;
 		        $flags = array();
 		    } elseif (substr($line, 0, 2) === '#,') {
-		        $flags = array_map('trim', explode(',', substr($line, 2)));
+				$flags = array_map('trim', explode(',', substr($line, 2)));
 		    } elseif (substr($line, 0, 7) === 'msgid "') {
-		        // We start a new msg so save previous
-		        // TODO: this fails when comments or contexts are added
-		        self::add_message($strings, $item);
+				// We start a new msg so save previous
+				// TODO: this fails when comments or contexts are added
+		        self::add_message($strings, $item, $fuzzy);
+
 		        $item = $defaults;
 		        $item['ids']['singular'] = substr($line, 7, -1);
 		    } elseif (substr($line, 0, 8) === 'msgstr "') {
-		        $item['translated'] = substr($line, 8, -1);
+				$item['translated'] = substr($line, 8, -1);
 		    } elseif ($line[0] === '"') {
 		        $continues = isset($item['translated']) ? 'translated' : 'ids';
 		        if (is_array($item[$continues])) {
@@ -157,8 +160,11 @@ class Util {
 		$output .= "\n";
 
 		foreach ($strings as $key => $value) {
+			if ($value['fuzzy'] === true) {
+				$output .= "#, fuzzy \n";
+			}
 			$output .= 'msgid "' . self::prepare_save_string($key) . '"' . "\n";
-			$output .= 'msgstr "' . self::prepare_save_string($value) . '"' . "\n\n";
+			$output .= 'msgstr "' . self::prepare_save_string($value['translated']) . '"' . "\n\n";
 		}
 
 		file_put_contents($filename, $output);
@@ -301,10 +307,11 @@ class Util {
 	 * @access private
 	 * @param array $strings
 	 * @param array $item
+	 * @param bool $fuzzy
 	 */
-	private static function add_message(array &$strings, array $item) {
+	private static function add_message(array &$strings, array $item, bool $fuzzy = false) {
         if (is_array($item['translated'])) {
-            $strings[stripcslashes($item['ids']['singular'])] = stripcslashes($item['translated'][0]);
+            $strings[stripcslashes($item['idcleas']['singular'])] = stripcslashes($item['translated'][0]);
             if (isset($item['ids']['plural'])) {
                 $plurals = $item['translated'];
                 // PO are by definition indexed so sort by index.
@@ -316,10 +323,12 @@ class Util {
                 $empties = array_fill(0, $count + 1, '-');
                 $plurals += $empties;
                 ksort($plurals);
-                $strings[stripcslashes($item['ids']['plural'])] = stripcslashes(implode('|', $plurals));
+                $strings[stripcslashes($item['ids']['plural'])]['fuzzy'] = $fuzzy;
+                $strings[stripcslashes($item['ids']['plural'])]['translated'] = stripcslashes(implode('|', $plurals));
             }
         } elseif (!empty($item['ids']['singular'])) {
-            $strings[stripcslashes($item['ids']['singular'])] = stripcslashes($item['translated']);
+			$strings[stripcslashes($item['ids']['singular'])]['fuzzy'] = $fuzzy;
+            $strings[stripcslashes($item['ids']['singular'])]['translated'] = stripcslashes($item['translated']);
         }
     }
 }
