@@ -39,7 +39,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 * @param InputInterface $input
 	 * @param OutputInterface $output
 	 */
-	protected function execute(InputInterface $input, OutputInterface $output) {
+	protected function execute(InputInterface $input, OutputInterface $output): int {
 		\Skeleton\Core\Application::get_all();
 		$translators = \Skeleton\I18n\Translator::get_all();
 
@@ -52,7 +52,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 
 	/**
 	 * Translate translator
-	 * 
+	 *
 	 * @param \Skeleton\I18n\Translator $translator
 	 * @param InputInterface $input
 	 * @param OutputInterface $output
@@ -108,11 +108,10 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$modified = false;
 			foreach ($existing_translations as $string => $existing_translation) {
 				if (!array_key_exists($string, $translations)) {
-					// @TODO: should we keep removed ones, with fuzzy.
 					$translator_storage->delete_translation($string);
 					$modified = true;
 				}
-				
+
 				$progressBar->advance();
 			}
 
@@ -122,26 +121,26 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$progressBar = new ProgressBar($output, count($translations));
 			$progressBar->setFormat('custom');
 			$progressBar->setMessage('Adding new translations');
-			
+
 			foreach ($translations as $string => $translated) {
 				if (isset($existing_translations[$string]) === true) {
 					// translation already exists
 					continue;
 				}
-				
+
 				$translator_storage->add_translation($string, '');
 				$modified = true;
 				$progressBar->advance();
 			}
-			
+
 			if ($modified === true) {
 				$translator_storage->close();
 			}
-			
+
 			$progressBar->finish();
 			$progressBar->clear();
 		}
-		
+
 		$output->writeln('');
 	}
 }
