@@ -60,7 +60,7 @@ class Language implements LanguageInterface {
 	public static function get_by_name_short($name) {
 		if (self::trait_cache_enabled()) {
 			try {
-				$object = self::cache_get(get_class() . '_' . $name);
+				$object = self::cache_get(self::class . '_' . $name);
 				return $object;
 			} catch (\Exception $e) {}
 		}
