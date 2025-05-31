@@ -39,7 +39,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 * @param InputInterface $input
 	 * @param OutputInterface $output
 	 */
-	protected function execute(InputInterface $input, OutputInterface $output) {
+	protected function execute(InputInterface $input, OutputInterface $output): int {
 		\Skeleton\Core\Application::get_all();
 		$translators = \Skeleton\I18n\Translator::get_all();
 
