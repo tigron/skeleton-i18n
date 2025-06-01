@@ -21,6 +21,14 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 	private $twig_environemt = null;
 
 	/**
+	 * Array extracted twigs
+	 *
+	 * @access private
+	 * @var array
+	 */
+	private ?array $extracted = null;
+
+	/**
 	 * Set the template path
 	 *
 	 * @access public
