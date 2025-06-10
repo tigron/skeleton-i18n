@@ -24,13 +24,13 @@ class Po extends \Skeleton\I18n\Translator\Storage {
 	 * @access public
 	 * @return array $translations
 	 */
-	public function load_translations(): ?array {
+
+	 public function load_translations(): ?array {
 		if (isset($this->strings[$this->language->name_short])) {
 			return null;
 		}
 
-		$translated = \Skeleton\I18n\Util::load($this->get_storage_path() . '/' . $this->language->name_short . '/' . $this->name . '.po');
-		return $translated;
+		return \Skeleton\I18n\Util::load($this->get_storage_path() . '/' . $this->language->name_short . '/' . $this->name . '.po');
 	}
 
 	/**
@@ -39,13 +39,15 @@ class Po extends \Skeleton\I18n\Translator\Storage {
 	 * @access private
 	 */
 	public function save_translations(): void {
-		$translations = $this->get_translations();
+		$strings = $this->get_translations();
+		$fuzzies = $this->get_fuzzies();
 
 		\Skeleton\I18n\Util::save(
 			$this->get_storage_path() . '/' . $this->language->name_short . '/' . $this->name . '.po',
 			$this->name,
 			$this->language,
-			$translations
+			$strings,
+			$fuzzies
 		);
 	}
 

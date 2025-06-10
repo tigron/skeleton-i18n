@@ -64,12 +64,12 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		$output->writeln('Generating translations for ' . $translator->get_name() . ': ');
 
 		$strings = $translator->get_translator_extractor()->get_strings();
-
 		$translations = [];
 		foreach ($strings as $string) {
 			$translations[$string] = null;
 		}
 		ksort($translations);
+
 		$language_interface = \Skeleton\I18n\Config::$language_interface;
 		$languages = $language_interface::get_all();
 
@@ -99,6 +99,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$translator_storage->set_language($language);
 			$translator_storage->set_name($translator->get_name());
 			$translator_storage->open();
+			$existing_fuzzies = $translator_storage->get_fuzzies();
 			$existing_translations = $translator_storage->get_translations();
 
 			$progressBar = new ProgressBar($output, count($existing_translations));
@@ -128,7 +129,12 @@ class I18n_Generate extends \Skeleton\Console\Command {
 					continue;
 				}
 
-				$translator_storage->add_translation($string, '');
+				if (isset($existing_fuzzies[$string]) === true) {
+					$translator_storage->add_translation($string, '',  true);
+				} else {
+					$translator_storage->add_translation($string, '',  false);
+				}
+
 				$modified = true;
 				$progressBar->advance();
 			}
