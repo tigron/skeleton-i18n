@@ -37,7 +37,7 @@ class Language implements LanguageInterface {
 	}
 
 	/**
-	 * is translatable
+	 * is base
 	 *
 	 * @access public
 	 * @return bool $translatable

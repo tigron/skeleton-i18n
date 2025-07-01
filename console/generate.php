@@ -99,9 +99,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$translator_storage->set_language($language);
 			$translator_storage->set_name($translator->get_name());
 			$translator_storage->open();
-			$existing_fuzzies = $translator_storage->get_fuzzies();
 			$existing_translations = $translator_storage->get_translations();
-
 			$progressBar = new ProgressBar($output, count($existing_translations));
 			$progressBar->setFormat('custom');
 			$progressBar->setMessage('Cleaning unused translations');
@@ -129,12 +127,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 					continue;
 				}
 
-				if (isset($existing_fuzzies[$string]) === true) {
-					$translator_storage->add_translation($string, '',  true);
-				} else {
-					$translator_storage->add_translation($string, '',  false);
-				}
-
+				$translator_storage->add_translation($string, '');
 				$modified = true;
 				$progressBar->advance();
 			}

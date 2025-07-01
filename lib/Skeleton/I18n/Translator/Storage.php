@@ -2,6 +2,8 @@
 
 namespace Skeleton\I18n\Translator;
 
+use Skeleton\Core\Skeleton;
+
 abstract class Storage {
 
 	/**
@@ -42,14 +44,6 @@ abstract class Storage {
 	 * @var array $strings
 	 */
 	protected $strings = null;
-
-	/**
-	 * fuzzies
-	 *
-	 * @access private
-	 * @var array $fuzzies
-	 */
-	protected $fuzzies = null;
 
 	/**
 	 * Constructor
@@ -122,15 +116,13 @@ abstract class Storage {
 		$translations = $this->load_cache_translations();
 		if ($translations !== null) {
 			// set the cached translations
-			$this->strings[$this->language->name_short] = $translations['strings'];
-			$this->fuzzies[$this->language->name_short] = $translations['fuzzies'];
+			$this->strings[$this->language->name_short] = $translations;
 			return;
 		}
 
 		$translations = $this->load_translations();
 		if ($translations !== null) {
-			$this->strings[$this->language->name_short] = $translations['strings'];
-			$this->fuzzies[$this->language->name_short] = $translations['fuzzies'];
+			$this->strings[$this->language->name_short] = $translations;
 			$this->write_cache_translations();
 		}
 	}
@@ -158,10 +150,8 @@ abstract class Storage {
 		$cache_last_modified->setTimestamp(filemtime($cache_filename));
 
 		if ($cache_last_modified >= $last_modified) {
-			// Set fuzzies in case they were not in the cache file (yet).
-			$fuzzies = [];
 			require $cache_filename;
-			return ['strings' => $strings, 'fuzzies' => $fuzzies];
+			return $strings;
 		}
 		return null;
 	}
@@ -178,9 +168,7 @@ abstract class Storage {
 			mkdir($cache_path . '/' . $this->language->name_short, 0755, true);
 		}
 		$cache_filename = $cache_path . '/' . $this->language->name_short . '/' . $this->name . '.php';
-        file_put_contents($cache_filename,
-			'<?php $strings = ' . var_export($this->strings[$this->language->name_short], true) . ';'
-			. ' $fuzzies = ' . var_export($this->fuzzies[$this->language->name_short], true) . ';');
+		file_put_contents($cache_filename,'<?php $strings = ' . var_export($this->strings[$this->language->name_short], true) . ';');
         $last_modified = $this->get_last_modified();
         if ($last_modified === null) {
 	        touch($cache_filename);
@@ -205,15 +193,15 @@ abstract class Storage {
 	/**
 	 * Add a translation
 	 *
-	 * @access public
-	 * @param string $string
-	 * @param string $translated_string
+	 * @param mixed $string
+	 * @param mixed $translated_string
+	 * @param bool $fuzzy
+	 * @return void
 	 */
-	public function add_translation($string, $translated_string, $fuzzy = false) {
-		$this->strings[$this->language->name_short][$string] = $translated_string;
-		if ($fuzzy === true) {
-			$this->fuzzies[$this->language->name_short][$string] = true;
-		}
+	public function add_translation($string, $translated_string, bool $fuzzy = false) {
+		$translation_entry = new \Skeleton\I18n\Translation\Entry($string);
+		$translation_entry->set($translated_string, $fuzzy);
+		$this->strings[$this->language->name_short][$string] = $translation_entry;
 		$this->invalidate_cache();
 	}
 
@@ -230,20 +218,35 @@ abstract class Storage {
 	}
 
 	/**
+	 * Get a translation entry
+	 *
+	 * @access public
+	 * @param string $string
+	 * @return  \Skeleton\I18n\Translation\Entry $transaltion_entry
+	 */
+	public function get_translation_entry($string): \Skeleton\I18n\Translation\Entry {
+		$translations = $this->get_translations();
+
+		if (isset($translations[$string]) === false || $translations[$string]->is_translated() === false) {
+			throw new \Exception('Translation entry not found for "' . $string . '"');
+		}
+
+		return $translations[$string];
+	}
+
+
+	/**
 	 * Get a translation
 	 *
 	 * @access public
 	 * @param string $string
 	 * @return string $translated_string
 	 */
-	public function get_translation($string) {
-		$translations = $this->get_translations();
-
-		if (!isset($translations[$string]) or empty($translations[$string])) {
-			throw new \Exception('Translation not found for "' . $string . '"');
-		}
-		return $translations[$string];
+	public function get_translation($string): string {
+		$translation_entry = $this->get_translation_entry($string);
+		return $translation_entry->get_translation();
 	}
+
 
 	/**
 	 * Get all translations
@@ -257,20 +260,6 @@ abstract class Storage {
 		}
 
 		return $this->strings[$this->language->name_short];
-	}
-
-	/**
-	 * Get all the fuzzies
-	 *
-	 * @access public
-	 * @return array $translation
-	 */
-	public function get_fuzzies(): array {
-		// Fuzzies can be empty, just check if the strings are set.
-		if (!isset($this->strings[$this->language->name_short])) {
-			throw new \Exception('Storage not opened');
-		}
-		return $this->fuzzies[$this->language->name_short];
 	}
 
 	/**

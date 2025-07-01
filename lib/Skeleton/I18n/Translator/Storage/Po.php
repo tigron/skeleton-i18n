@@ -39,15 +39,12 @@ class Po extends \Skeleton\I18n\Translator\Storage {
 	 * @access private
 	 */
 	public function save_translations(): void {
-		$strings = $this->get_translations();
-		$fuzzies = $this->get_fuzzies();
-
+		$translations = $this->get_translations();
 		\Skeleton\I18n\Util::save(
 			$this->get_storage_path() . '/' . $this->language->name_short . '/' . $this->name . '.po',
 			$this->name,
 			$this->language,
-			$strings,
-			$fuzzies
+			$translations
 		);
 	}
 
