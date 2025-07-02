@@ -198,10 +198,33 @@ abstract class Storage {
 	 * @param bool $fuzzy
 	 * @return void
 	 */
-	public function add_translation($string, $translated_string, bool $fuzzy = false) {
+	public function add_translation($string, $translated_string, bool $fuzzy = false): void {
 		$translation_entry = new \Skeleton\I18n\Translation\Entry($string);
 		$translation_entry->set($translated_string, $fuzzy);
 		$this->strings[$this->language->name_short][$string] = $translation_entry;
+		$this->invalidate_cache();
+	}
+
+
+	/**
+	 * Add a translation entry
+	 *
+	 * @param \Skeleton\I18n\Translation\Entry $entry
+	 * @return void
+	 */
+	public function add_translation_entry(\Skeleton\I18n\Translation\Entry $entry): void {
+		$this->strings[$this->language->name_short][$entry->source] = $entry;
+		$this->invalidate_cache();
+	}
+
+	/**
+	 * Update a translation entry
+	 *
+	 * @param \Skeleton\I18n\Translation\Entry $entry
+	 * @return void
+	 */
+	public function update_translation_entry(\Skeleton\I18n\Translation\Entry $entry): void {
+		$this->strings[$this->language->name_short][$entry->source] = $entry;
 		$this->invalidate_cache();
 	}
 

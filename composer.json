@@ -8,6 +8,10 @@
 		"tigron/skeleton-database": "*",
 		"tigron/skeleton-core": ">=3"
     },
+    "suggest": {
+        "guzzlehttp/guzzle": "The translator services require the Guzzle api client",
+        "ext-xml": "Needed to use the translation services"
+    },
     "license": "MIT",
     "authors": [
         {
