@@ -40,6 +40,13 @@ Translate a Skeleton App:
 	$translator_extractor_twig->set_template_path($application->template_path);
 	$translator->set_translator_extractor($translator_extractor_twig);
 
+	[ optional ]
+ 	/**
+	 * Use a translator service to automatically translate untranslated strings
+	 */
+	$tas_service = new \Skeleton\I18n\Translator\Service\Tas();
+	$translator->set_translator_service($tas_service);
+
 	/**
 	 * Save the translator
 	 */
@@ -65,9 +72,21 @@ will be used for any newly created Translator\Storage object.
 	 */
 	\Skeleton\I18n\Config::$language_interface = '\Language';
 
-Use it:
+#### Use it:
 
 Via a twig template rendered by skeleton-template-twig:
 
 	{% trans "To be translated" %}
 
+#### Po files:
+
+Po files can now contain the fuzzy flag: **#, fuzzy** this makes it clear which translations still need work. 
+
+
+#### Translator services:
+
+A new translator service has been added, this is to make it possible to automatically translate untranslated strings.
+Translations made by a translator service will get the fuzzy flag. 
+
+Currently supported translator services: 
+- TAS: \Skeleton\I18n\Translator\Service\Tas() => https://github.com/Uncover-F/TAS
