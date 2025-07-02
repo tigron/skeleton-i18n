@@ -80,7 +80,7 @@ class I18n_Translate extends \Skeleton\Console\Command {
 		$translator_storage = $translator->get_translator_storage();
 
 		foreach ($languages as $language) {
-			if ($language->is_translatable() == false) {
+			if ($language->is_translatable() === false || $language->is_base() === true) {
 				continue;
 			}
 			$translator_service->set_target_language($language);
@@ -113,6 +113,7 @@ class I18n_Translate extends \Skeleton\Console\Command {
 				$translator_storage->update_translation_entry($trans_entry);
 				$modified = true;
 
+				$translator_storage->save_translations();
 				$progressBar->advance();
 			}
 

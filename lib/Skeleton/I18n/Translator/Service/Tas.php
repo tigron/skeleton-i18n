@@ -103,11 +103,12 @@ class Tas extends \Skeleton\I18n\Translator\Service {
 	 * @return \stdClass
 	 */
 	private function translation_request(string $text): \stdClass {
-		$result = $this->request('GET',
-								 'translate?text=' . $text
-								 . '&source_lang=' . $this->source_lang
-								 . '&target_lang=' .  $this->target_lang,
-							);
+		$result = $this->request(
+			'GET',
+			'translate?text=' . $text
+			. '&source_lang=' . $this->source_lang
+			. '&target_lang=' .  $this->target_lang,
+		);
 		// We need to wait 0.25 secs after every call to  avoid being rate limited.  (DO NOT REMOVE CAN LEAD TO PERMANENT BLOCK)
 		usleep(250000);
 		return json_decode($result->getBody());
