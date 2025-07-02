@@ -132,7 +132,6 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 	 */
 	public function enterNode(\Twig\Node\Node $node, \Twig\Environment $env): \Twig\Node\Node {
 		if ($node instanceof \Skeleton\I18n\Template\Twig\Extension\Node\Trans\Tigron) {
-
 			if ($node->getNodeTag() == 'trans') {
 				$extracted = null;
 
@@ -176,7 +175,11 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 		} elseif ($node instanceof \Twig\Node\Expression\ArrayExpression) {
 			$data = $node->getIterator();
 			foreach ($data as $row) {
-				$this->extract_message_from_filter_expression($row);
+				if ($row instanceof \Twig\Node\Expression\FilterExpression) {
+					$this->extract_message_from_filter_expression($row);
+				} elseif ($row instanceof \Twig\Node\Expression\Binary\ConcatBinary) {
+					$this->extract_message_from_concat_binary($row);
+				}
 			}
 		} elseif ($node instanceof \Twig\Node\Expression\FilterExpression) {
 			$data = $node->getIterator();
