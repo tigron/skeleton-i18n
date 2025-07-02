@@ -1,26 +1,18 @@
 <?php
 /**
- * i18n:generate command for Skeleton Console
+ * i18n:translate command for Skeleton Console
  *
- * @author Gerry Demaret <gerry@tigron.be>
- * @author Christophe Gosiau <christophe@tigron.be>
- * @author David Vandemaele <david@tigron.be>
+ * @author Roan Buysse <roan@tigron.be>
  */
 
 namespace Skeleton\Console\Command;
 
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Aptoma\Twig\Extension\MarkdownExtension;
-use Aptoma\Twig\Extension\MarkdownEngine;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Cursor;
 
-class I18n_Generate extends \Skeleton\Console\Command {
-
-	protected $twig_extractor = null;
+class I18n_Translate extends \Skeleton\Console\Command {
 
 	/**
 	 * Configure the Create command
@@ -28,8 +20,8 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 * @access protected
 	 */
 	protected function configure() {
-		$this->setName('i18n:generate');
-		$this->setDescription('Generate po files based on application templates');
+		$this->setName('i18n:translate');
+		$this->setDescription('Translate the unstransalated strings from the po files with a specific service');
 	}
 
 	/**
@@ -44,7 +36,7 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		$translators = \Skeleton\I18n\Translator::get_all();
 
 		foreach ($translators as $key => $translator) {
-			$this->translate_translator($translator, $input, $output);
+			$this->translate_service($translator, $input, $output);
 		}
 
 		return 0;
@@ -58,20 +50,21 @@ class I18n_Generate extends \Skeleton\Console\Command {
 	 * @param OutputInterface $output
 	 * @return void
 	 */
-	private function translate_translator($translator, InputInterface $input, OutputInterface $output): void {
+	private function translate_service($translator, InputInterface $input, OutputInterface $output): void {
 		ProgressBar::setFormatDefinition('custom', ' [%bar%] %current%/%max% -- %message%');
 		$cursor = new Cursor($output);
-		$output->writeln('Generating translations for ' . $translator->get_name() . ': ');
 
-		$strings = $translator->get_translator_extractor()->get_strings();
 		$translations = [];
-		foreach ($strings as $string) {
-			$translations[$string] = null;
-		}
 		ksort($translations);
 
 		$language_interface = \Skeleton\I18n\Config::$language_interface;
 		$languages = $language_interface::get_all();
+
+		if (empty($translator->get_translator_service()) === true) {
+			$output->writeln('No translator service set for ' . $translator->get_name() . ': ');
+			return;
+		}
+		$output->writeln('Translating untranslated strings for ' . $translator->get_name() . ': ');
 
 		/**
 		 * UI stuff
@@ -82,10 +75,15 @@ class I18n_Generate extends \Skeleton\Console\Command {
 		$language_x = $cursor->getCurrentPosition()[0];
 		$language_y = $cursor->getCurrentPosition()[1];
 
+
+		$translator_service = $translator->get_translator_service();
+		$translator_storage = $translator->get_translator_storage();
+
 		foreach ($languages as $language) {
-			if (!$language->is_translatable()) {
+			if ($language->is_translatable() == false) {
 				continue;
 			}
+			$translator_service->set_target_language($language);
 
 			/**
 			 * UI stuff
@@ -95,42 +93,31 @@ class I18n_Generate extends \Skeleton\Console\Command {
 			$language_x = $cursor->getCurrentPosition()[0];
 			$cursor->moveToPosition(0, $language_y+1);
 
-			$translator_storage = $translator->get_translator_storage();
 			$translator_storage->set_language($language);
 			$translator_storage->set_name($translator->get_name());
 			$translator_storage->open();
-			$existing_translations = $translator_storage->get_translations();
-			$progressBar = new ProgressBar($output, count($existing_translations));
+			$trans_entries = $translator_storage->get_translations();
+			$progressBar = new ProgressBar($output, count($trans_entries));
 			$progressBar->setFormat('custom');
-			$progressBar->setMessage('Cleaning unused translations');
+			$progressBar->setMessage('Updating translations');
 
 			$modified = false;
-			foreach ($existing_translations as $string => $existing_translation) {
-				if (!array_key_exists($string, $translations)) {
-					$translator_storage->delete_translation($string);
-					$modified = true;
+			foreach ($trans_entries as $trans_entry) {
+				// We only want to use the service if the string has not been translated.
+				if ($trans_entry->is_translated() === true) {
+					$progressBar->advance();
+					continue;
 				}
+
+				$trans_entry = $translator_service->translate($trans_entry);
+				$translator_storage->update_translation_entry($trans_entry);
+				$modified = true;
 
 				$progressBar->advance();
 			}
 
 			$progressBar->finish();
 			$progressBar->clear();
-
-			$progressBar = new ProgressBar($output, count($translations));
-			$progressBar->setFormat('custom');
-			$progressBar->setMessage('Adding new translations');
-
-			foreach ($translations as $string => $translated) {
-				if (isset($existing_translations[$string]) === true) {
-					// translation already exists
-					continue;
-				}
-
-				$translator_storage->add_translation($string, '');
-				$modified = true;
-				$progressBar->advance();
-			}
 
 			if ($modified === true) {
 				$translator_storage->close();

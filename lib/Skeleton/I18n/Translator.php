@@ -34,6 +34,14 @@ class Translator {
 	private $translator_extractor = null;
 
 	/**
+	 * Translator_Service
+	 *
+	 * @acess private
+	 * @var Translator_Service $translator_service
+	 */
+	private $translator_service = null;
+
+	/**
 	 * Languages
 	 *
 	 * @access private
@@ -102,6 +110,16 @@ class Translator {
 	}
 
 	/**
+	 * Set translator_service
+	 *
+	 * @access public
+	 * @param Translator_Extractor $translator_extractor
+	 */
+	public function set_translator_service(\Skeleton\I18n\Translator\Service $translator_service) {
+		$this->translator_service = $translator_service;
+	}
+
+	/**
 	 * Get translator_extractor
 	 *
 	 * @access public
@@ -109,6 +127,16 @@ class Translator {
 	 */
 	public function get_translator_extractor() {
 		return $this->translator_extractor;
+	}
+
+	/**
+	 * Set translator_service
+	 *
+	 * @access public
+	 * @return Translator_Service $translator_service
+	 */
+	public function get_translator_service() {
+		return $this->translator_service;
 	}
 
 	/**

@@ -24,16 +24,15 @@ class Util {
 	 */
 	public static function load($filename) {
 		$strings = [];
-		$fuzzies = [];
 		if (!file_exists($filename)) {
-			return ['strings' => $strings, 'fuzzies' => $fuzzies];
+			return [];
 		}
 		$content = file_get_contents($filename);
 		$lines = explode("\n", $content);
 
 		$defaults = [
-				   'ids' => [],
-				   'translated' => "",
+				'ids' => [],
+				'translated' => "",
 		];
 
 		$item = $defaults;
@@ -47,7 +46,7 @@ class Util {
 			}
 		    if ($line === '') {
 		        // Whitespace indicated current item is done
-		        self::add_message($strings, $item, $fuzzies, $fuzzy);
+		        self::add_message($strings, $item, $fuzzy);
 		        $item = $defaults;
 		        $flags = array();
 		    } elseif (substr($line, 0, 2) === '#,') {
@@ -55,7 +54,7 @@ class Util {
 		    } elseif (substr($line, 0, 7) === 'msgid "') {
 				// We start a new msg so save previous
 				// TODO: this fails when comments or contexts are added
-		        self::add_message($strings, $item, $fuzzies, $fuzzy);
+		        self::add_message($strings, $item, $fuzzy);
 
 		        $item = $defaults;
 		        $item['ids']['singular'] = substr($line, 7, -1);
@@ -78,10 +77,10 @@ class Util {
 		}
 		// save last item
 		if (!in_array('fuzzy', $flags)) {
-		    self::add_message($strings, $item, $fuzzies, $fuzzy);
+		    self::add_message($strings, $item, $fuzzy);
 		}
 
-		return ['strings' => $strings, 'fuzzies' => $fuzzies];
+		return $strings;
 	}
 
 	/**
@@ -117,7 +116,7 @@ class Util {
 	 * @param string $filename
 	 * @param array $strings
 	 */
-	public static function save($filename, $project, $language, $strings, $fuzzies) {
+	public static function save($filename, $project, $language, $strings) {
 		ksort($strings, SORT_STRING | SORT_FLAG_CASE);
 		$dir = dirname($filename);
 		if (!file_exists($dir)) {
@@ -160,35 +159,38 @@ class Util {
 		$output .= "\n";
 
 		foreach ($strings as $key => $value) {
-			if (isset($fuzzies[$key]) === true) {
+			if ($value->is_fuzzy() === true) {
 				$output .= "#, fuzzy \n";
 			}
 			$output .= 'msgid "' . self::prepare_save_string($key) . '"' . "\n";
-			$output .= 'msgstr "' . self::prepare_save_string($value) . '"' . "\n\n";
+			$output .= 'msgstr "' . self::prepare_save_string($value->get_translation()) . '"' . "\n\n";
 		}
 
 		file_put_contents($filename, $output);
 	}
 
+
 	/**
-	 * Merge 2 po files
+	 * Merge 2 po file
 	 *
-	 * @access public
-	 * @param array $strings1
-	 * @param array $strings2
+	 * @param string $base_file
+	 * @param string $extra_file
+	 * @param string $name
+	 * @param \Skeleton\I18n\Language $language
+	 * @return void
 	 */
-	public static function merge($base, $extra) {
-		$base_strings = self::load($base);
-		$extra_strings = self::load($extra);
+	public static function merge(string $base_file,string $extra_file, string $name, Language $language): void {
+		$base_strings = self::load($base_file);
+		$extra_strings = self::load($extra_file);
 
 		$extra_strings_keys = array_keys($extra_strings);
 		foreach ($extra_strings_keys as $string) {
-			if (isset($base_strings[$string]) AND $base_strings[$string] != '') {
-				$extra_strings[$string] = $base_strings[$string];
+			if (isset($base_strings[$string]) === false || $base_strings[$string] == '') {
+				$base_strings[$string] = $extra_strings[$string];
 			}
 		}
 
-		self::save($base, $extra_strings);
+		self::save($base_file, $name, $language, $base_strings);
 	}
 
 	/**
@@ -309,30 +311,32 @@ class Util {
 	 * @param array $item
 	 * @param bool $fuzzy
 	 */
-	private static function add_message(array &$strings, array $item, array &$fuzzies, bool $fuzzy = false) {
-        if (is_array($item['translated'])) {
-            $strings[stripcslashes($item['idcleas']['singular'])] = stripcslashes($item['translated'][0]);
-            if (isset($item['ids']['plural'])) {
-                $plurals = $item['translated'];
-                // PO are by definition indexed so sort by index.
-                ksort($plurals);
-                // Make sure every index is filled.
-                end($plurals);
-                $count = key($plurals);
-                // Fill missing spots with '-'.
-                $empties = array_fill(0, $count + 1, '-');
-                $plurals += $empties;
-                ksort($plurals);
-				if ($fuzzy === true) {
-					$fuzzies[stripcslashes($item['ids']['plural'])] = $fuzzy;
-				}
-                $strings[stripcslashes($item['ids']['plural'])] = stripcslashes(implode('|', $plurals));
-            }
-        } elseif (!empty($item['ids']['singular'])) {
-			if ($fuzzy === true) {
-				$fuzzies[stripcslashes($item['ids']['singular'])] = $fuzzy;
+	private static function add_message(array &$strings, array $item, bool $fuzzy = false) {
+		if (is_array($item['translated'])) {
+			$strings[stripcslashes($item['ids']['singular'])] = stripcslashes($item['translated'][0]);
+			if (isset($item['ids']['plural'])) {
+				$source = stripcslashes($item['ids']['plural']);
+				$translation_entry = new Translation\Entry($source);
+
+				$plurals = $item['translated'];
+				// PO are by definition indexed so sort by index.
+				ksort($plurals);
+				// Make sure every index is filled.
+				end($plurals);
+				$count = key($plurals);
+				// Fill missing spots with '-'.
+				$empties = array_fill(0, $count + 1, '-');
+				$plurals += $empties;
+				ksort($plurals);
+
+				$translation_entry->set_plural($plurals, $fuzzy);
+				$strings[$source] = $translation_entry;
 			}
-            $strings[stripcslashes($item['ids']['singular'])] = stripcslashes($item['translated']);
-        }
+		} elseif (!empty($item['ids']['singular'])) {
+			$source = stripcslashes($item['ids']['singular']);
+			$translation_entry = new Translation\Entry($source);
+			$translation_entry->set($item['translated'], $fuzzy);
+			$strings[$source] = $translation_entry;
+		}
     }
 }
