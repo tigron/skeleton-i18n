@@ -90,3 +90,4 @@ Translations made by a translator service will get the fuzzy flag.
 
 Currently supported translator services: 
 - TAS: \Skeleton\I18n\Translator\Service\Tas() => https://github.com/Uncover-F/TAS
+- Deepl: \Skeleton\I18n\Translator\Service\Deepl() => https://www.deepl.com/en/pro-api/
