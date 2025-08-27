@@ -151,7 +151,17 @@ abstract class Storage {
 
 		if ($cache_last_modified >= $last_modified) {
 			require $cache_filename;
-			return $strings;
+			$translations = [];
+			foreach ($strings as $key => $translation) {
+				$translation_entry = new \Skeleton\I18n\Translation\Entry($translation['source']);
+				$fuzzy = false;
+				if (isset($translation['fuzzy'])) {
+					$fuzzy = $translation['fuzzy'];
+				}
+				$translation_entry->set($translation['destination'], $fuzzy);
+				$translations[$key] =  $translation_entry;
+			}
+			return $translations;
 		}
 		return null;
 	}
@@ -168,13 +178,22 @@ abstract class Storage {
 			mkdir($cache_path . '/' . $this->language->name_short, 0755, true);
 		}
 		$cache_filename = $cache_path . '/' . $this->language->name_short . '/' . $this->name . '.php';
-		file_put_contents($cache_filename,'<?php $strings = ' . var_export($this->strings[$this->language->name_short], true) . ';');
-        $last_modified = $this->get_last_modified();
-        if ($last_modified === null) {
-	        touch($cache_filename);
-        } else {
-	        touch($cache_filename, $this->get_last_modified()->getTimestamp());
-       }
+
+		$translation_array = $this->strings[$this->language->name_short];
+		foreach ($this->strings[$this->language->name_short] as $key =>  $translation_entry) {
+			$row['source'] = $translation_entry->source;
+			$row['destination'] = $translation_entry->get_translation();
+			$row['fuzzy'] = $translation_entry->is_fuzzy();
+			$translation_array[$key] = $row;
+		}
+
+		file_put_contents($cache_filename, '<?php $strings = ' . var_export($translation_array, true) . ';');
+		$last_modified = $this->get_last_modified();
+		if ($last_modified === null) {
+			touch($cache_filename);
+		} else {
+			touch($cache_filename, $this->get_last_modified()->getTimestamp());
+		}
 	}
 
 	/**
@@ -249,7 +268,6 @@ abstract class Storage {
 	 */
 	public function get_translation_entry($string): \Skeleton\I18n\Translation\Entry {
 		$translations = $this->get_translations();
-
 		if (isset($translations[$string]) === false || $translations[$string]->is_translated() === false) {
 			throw new \Exception('Translation entry not found for "' . $string . '"');
 		}
