@@ -28,6 +28,13 @@ class Translation {
 	public $language = null;
 
 	/**
+	 * Cache
+	 *
+	 * @access private
+	 */
+	private static $cache = [];
+
+	/**
 	 * Translate
 	 *
 	 * @access public
@@ -62,5 +69,28 @@ class Translation {
 		$translator = Translator::get_by_name($name);
 		$translation = $translator->get_translation($language);
 		return $translation;
+	}
+
+	/**
+	 * Get by translator_language
+	 *
+	 * @access public
+	 * @param \Skeleton\I18n\Translator $translator
+	 * @param \Skeleton\I18n\LanguageInterface $language
+	 * @return Translation $translation
+	 */
+	public static function get_by_translator_language(\Skeleton\I18n\Translator $translator, \Skeleton\I18n\LanguageInterface $language): self {
+		if (!isset(self::$cache[$translator->get_name()][$language->name_short])) {
+			$translation = new self();
+			$translator_storage = $translator->get_translator_storage();
+			$translator_storage->set_language($language);
+			$translator_storage->set_name($translator->get_name());
+			$translator_storage->open();
+			$translation->translator_storage = $translator_storage;
+			$translation->language = $language;
+
+			self::$cache[$translator->get_name()][$language->name_short] = $translation;
+		}
+		return self::$cache[$translator->get_name()][$language->name_short];
 	}
 }

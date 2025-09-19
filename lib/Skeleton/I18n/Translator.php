@@ -145,14 +145,7 @@ class Translator {
 	 * @access public
 	 */
 	public function get_translation(\Skeleton\I18n\LanguageInterface $language) {
-		$translation = new Translation();
-		$translator_storage = $this->translator_storage;
-		$translator_storage->set_language($language);
-		$translator_storage->set_name($this->name);
-		$translator_storage->open();
-		$translation->translator_storage = $translator_storage;
-		$translation->language = $language;
-		return $translation;
+		return Translation::get_by_translator_language($this, $language);
 	}
 
 	/**
