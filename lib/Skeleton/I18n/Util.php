@@ -229,7 +229,7 @@ class Util {
 				// so we multiply the qvalue by 1000 to avoid floating point
 				// comparisons.
 				$langcode = strtolower($match[1]);
-				$qvalue = isset($match[2]) ? (double) $match[2] : 1;
+				$qvalue = isset($match[2]) ? (float) $match[2] : 1;
 
 				// Take the highest qvalue for this langcode. Although the request
 				// supposedly contains unique langcodes, our mapping possibly resolves
