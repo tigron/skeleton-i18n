@@ -5,12 +5,12 @@ namespace Skeleton\I18n\Translator\Extractor;
 class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\NodeVisitorInterface {
 
 	/**
-	 * The twig template path
+	 * The twig template paths
 	 *
 	 * @access private
-	 * @var string $template_path
+	 * @var array $template_paths
 	 */
-	private $template_path = null;
+	private $template_paths = [];
 
 	/**
 	 * Twig environment
@@ -35,7 +35,17 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 	 * @param string $template_path
 	 */
 	public function set_template_path($template_path) {
-		$this->template_path = $template_path;
+		$this->template_paths = [$template_path];
+	}
+
+	/**
+	 * Set the template path
+	 *
+	 * @access public
+	 * @param string $template_path
+	 */
+	public function add_template_path($template_path) {
+		$this->template_paths[] = $template_path;
 	}
 
 	/**
@@ -46,17 +56,19 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 	 */
 	public function get_strings() {
 		$templates = [];
-		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->template_path), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
-			if ($file->isFile() === false) {
-				continue;
-			}
+		foreach ($this->template_paths as $template_path) {
+			foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($template_path), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
+				if ($file->isFile() === false) {
+					continue;
+				}
 
-			if ($file->getExtension() != 'twig') {
-				continue;
-			}
+				if ($file->getExtension() != 'twig') {
+					continue;
+				}
 
-			$resource = substr($file, strlen($this->template_path));
-			$templates[] = $resource;
+				$resource = substr($file, strlen($template_path));
+				$templates[] = $resource;
+			}
 		}
 
 		$strings = [];
@@ -74,7 +86,7 @@ class Twig implements \Skeleton\I18n\Translator\Extractor, \Twig\NodeVisitor\Nod
 	 */
 	protected function get_twig_environment() {
 		if (!isset($this->twig_environment)) {
-			$loader = new \Twig\Loader\FilesystemLoader($this->template_path);
+			$loader = new \Twig\Loader\FilesystemLoader($this->template_paths);
 
 			// force auto-reload to always have the latest version of the template
 			$twig = new \Twig\Environment($loader, [
