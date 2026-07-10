@@ -72,16 +72,33 @@ class Deepl extends \Skeleton\I18n\Translator\Service {
 	 * @return void
 	 */
 	private function init_client(): void {
-		if (isset($this->client) === false) {
-			$config = [
-				'base_uri' => $this->endpoint,
-				'headers' => [
-					'Content-Type' => 'application/json; charset=UTF8',
-					'Authorization' => 'DeepL-Auth-Key ' . $this->api_key
-				],
-			];
-			$this->client = new \GuzzleHttp\Client($config);
+		if (isset($this->client) === true) {
+			return;
 		}
+
+		$stack = \GuzzleHttp\HandlerStack::create();
+		$stack->push(\GuzzleHttp\Middleware::retry(
+    		function ($retries, $request, $response = null,	$exception = null) {
+        		if ($retries >= 5) {
+            		return false;
+        		}
+
+        		return $response && $response->getStatusCode() === 429;
+    		},
+    		function ($retries, $response = null) {
+				return pow(2, $retries) * 1000;
+			}
+		));
+
+		$config = [
+			'base_uri' => $this->endpoint,
+			'headers' => [
+				'Content-Type' => 'application/json; charset=UTF8',
+				'Authorization' => 'DeepL-Auth-Key ' . $this->api_key
+			],
+			'handler' => $stack,
+		];
+		$this->client = new \GuzzleHttp\Client($config);
 	}
 
 	/**
