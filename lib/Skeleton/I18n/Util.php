@@ -160,7 +160,7 @@ class Util {
 
 		foreach ($strings as $key => $value) {
 			if ($value->is_fuzzy() === true) {
-				$output .= "#, fuzzy \n";
+				$output .= "#, fuzzy\n";
 			}
 			$output .= 'msgid "' . self::prepare_save_string($key) . '"' . "\n";
 			$output .= 'msgstr "' . self::prepare_save_string($value->get_translation()) . '"' . "\n\n";
